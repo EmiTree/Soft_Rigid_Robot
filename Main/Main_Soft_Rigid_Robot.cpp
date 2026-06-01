@@ -5,7 +5,7 @@
 #include "MotorConverter.h"   // Your own motor scaling class from Modules/MotorConverter.
 #include "MPU6050Sensor.h"  // Your own MPU6050 sensor class from Modules/MPU6050Sensor.
 #include "MotorDriver.h"
-#include "ServoActuation.h"
+#include "ServoActuation.h" 
 
 #include <stdio.h>            // printf() and sscanf().
 #include <stdlib.h>           // atof(), which converts text to a float number.
@@ -63,125 +63,99 @@ void printHelp();
 void printLiveValues();
 
 int main() {
-    stdio_init_all(); // Start USB serial communication.
+    stdio_init_all();
 
-    /*
-        Wait until the computer actually opens the serial connection.
-        This helps to see the startup messages instead of missing them.
-    */
     while (!stdio_usb_connected()) {
         sleep_ms(100);
     }
 
     printf("Starting...\n");
 
-  /*
-    Set up the motor driver pins as PWM outputs.
-*/
-// Amai de indent
-
-    // This function sets up 4 pwm pins for the motors and sets them to zero
-    motorDriver.begin();  
-
+    motorDriver.begin();
     printf("Successfully setup motors\n");
 
     servoActuation.begin();
-
     printf("Successfully setup servos\n");
 
     mpuOk = mpu.begin();
 
-        if (!mpuOk) {
-            printf("MPU setup failed. PID will stay stopped, but settings commands still work.\n");
-        } else {
-            printf("MPU setup succeeded. PID can be started with the 'start' command.\n");
-        }
+    if (!mpuOk) {
+        printf("MPU setup failed. PID will stay stopped, but settings commands still work.\n");
+    } else {
+        printf("MPU setup succeeded. PID can be started with the 'start' command.\n");
+    }
 
-        absolute_time_t last_time = get_absolute_time();
+    absolute_time_t last_time = get_absolute_time();
 
-        clearCommandBuffer();
+    clearCommandBuffer();
 
-        printf("PID is stopped.\n");
-        printf("Type help for all commands.\n");
-        printSettings(); // This is used for communication in the serial monitor
+    printf("PID is stopped.\n");
+    printf("Type help for all commands.\n");
+    printSettings();
 
+    while (true) {
+        handleSerialCommands();
 
-        while (true) {
-            handleSerialCommands(); // This checks if you typed a command, and if so, processes it. It also updates the hasPendingCommand variable and lastCommandTime for command timeout handling.
-            
-            servoActuation.update(); 
+        servoActuation.update();
 
-            //reset to 0 for the current loop round. Then the PID/motor code may fill them in with actual numbers.
-            float pValue = 0.0f;
-            float iValue = 0.0f;
-            float dValue = 0.0f;
+        float pValue = 0.0f;
+        float iValue = 0.0f;
+        float dValue = 0.0f;
 
-            float pidOutput = 0.0f;
-            float motorOutput = 0.0f;
-            float pwmA = 0.0f;
-            float pwmB = 0.0f;
+        float pidOutput = 0.0f;
+        float motorOutput = 0.0f;
+        float pwmA = 0.0f;
+        float pwmB = 0.0f;
 
-            absolute_time_t current_time = get_absolute_time();
-            float dt = absolute_time_diff_us(last_time, current_time) / 1000000.0f;
-            last_time = current_time;
+        absolute_time_t current_time = get_absolute_time();
+        float dt = absolute_time_diff_us(last_time, current_time) / 1000000.0f;
+        last_time = current_time;
 
-            if (mpu.update(dt)) {
-                mpuOk = true;
+        if (mpu.update(dt)) {
+            mpuOk = true;
 
-                float angle = mpu.getAngle();
-                float gx = mpu.getGyroX();
+            float angle = mpu.getAngle();
+            float gx = mpu.getGyroX();
 
-                if (pidRunning) {
+            if (pidRunning) {
+                pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
 
-                    // pid.update is the pid formula
-                    pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
+                MotorCommand motorCommand = motorConverter.convert(pidOutput);
+                motorOutput = motorCommand.motorOutput;
+                pwmA = motorCommand.pwmA;
+                pwmB = motorCommand.pwmB;
 
-                    /* 
-                    Motor Command convert() turns pidOutput to pmw signals 
-                    these are stored values are stored locally instead of being returned by the function
-                    Convert also runs the deadband if enabled
-                    */
-
-                    MotorCommand motorCommand = motorConverter.convert(pidOutput);
-                    motorOutput = motorCommand.motorOutput;
-                    pwmA = motorCommand.pwmA;
-                    pwmB = motorCommand.pwmB;
-
-                    motorDriver.drive(pwmA, pwmB);
-
-                } else {
-                    motorDriver.stop(); //stop() sets all motor pwm pins to zero
-                    pid.reset();
-                }
-
-                lastRoll = mpu.getRoll();
-                lastPitch = mpu.getPitch();
-                lastAngle = mpu.getAngle();
-
+                motorDriver.drive(pwmA, pwmB);
             } else {
-                mpuOk = false;
-                pidRunning = false;
-                resetPid();
                 motorDriver.stop();
-
-                printf("\nMPU read failed. PID stopped and motors off.\n");
-                printf("Check MPU wiring, power, or I2C noise. Commands still work.\n");
+                pid.reset();
             }
 
-            lastPidOutput = pidOutput;
-            lastPValue = pValue;
-            lastIValue = iValue;
-            lastDValue = dValue;
-            lastMotorOutput = motorOutput;
-            lastPwmA = pwmA;
-            lastPwmB = pwmB;
+            lastRoll = mpu.getRoll();
+            lastPitch = mpu.getPitch();
+            lastAngle = mpu.getAngle();
+        } else {
+            mpuOk = false;
+            pidRunning = false;
+            resetPid();
+            motorDriver.stop();
+            servoActuation.stopAll();
 
-            // sleep_ms(10); // Why is this here? 
-            // The pid controller should run as fast as possible
+            printf("\nMPU read failed. PID stopped, motors off, servos stopped.\n");
+            printf("Check MPU wiring, power, or I2C noise. Commands still work.\n");
         }
 
-        return 0;
+        lastPidOutput = pidOutput;
+        lastPValue = pValue;
+        lastIValue = iValue;
+        lastDValue = dValue;
+        lastMotorOutput = motorOutput;
+        lastPwmA = pwmA;
+        lastPwmB = pwmB;
     }
+
+    return 0;
+}
 
 //-------------start of functions that were declared above main() but defined after main()-----------
 
@@ -197,9 +171,8 @@ void forceStopEverything() {
     pidRunning = false;
     resetPid();
     motorDriver.stop();
-    servoActuation.stopAll();
 
-    printf("\nFORCE STOP: PID off, motors off, servos stopped\n");
+    printf("\nFORCE STOP: PID off, motors off\n");
 }
 
 
