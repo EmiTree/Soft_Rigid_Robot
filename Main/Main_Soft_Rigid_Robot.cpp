@@ -47,7 +47,7 @@ float lastDValue = 0.0f;
 float lastMotorOutput = 0.0f;
 float lastPwmA = 0.0f;
 float lastPwmB = 0.0f;
-
+float lastdt = 0.0f;
 /*
 These functions exist somewhere later in this file. Here are their names, what they return, and what inputs they need.
 */
@@ -118,7 +118,6 @@ printf("Successfully setup motors\n");
         absolute_time_t current_time = get_absolute_time();
         float dt = absolute_time_diff_us(last_time, current_time) / 1000000.0f;
         last_time = current_time;
-
         if (mpu.update(dt)) {
             mpuOk = true;
 
@@ -169,6 +168,8 @@ printf("Successfully setup motors\n");
         lastMotorOutput = motorOutput;
         lastPwmA = pwmA;
         lastPwmB = pwmB;
+        lastdt = dt;
+        sleep_ms(10); // Why is this here? 
 
         // sleep_ms(10); // Why is this here? 
         // The pid controller should run as fast as possible
@@ -488,7 +489,8 @@ void printLiveValues() {
            lastDValue,
            lastMotorOutput,
            lastPwmA,
-           lastPwmB);
+           lastPwmB,
+           lastdt);
     printf("-------------------\n");
 }
 

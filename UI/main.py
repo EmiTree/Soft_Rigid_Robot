@@ -1,7 +1,6 @@
 import tkinter as tk
 import serial
 
-
 # Set correct com port for pico
 serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
 

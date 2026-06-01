@@ -1,0 +1,9 @@
+{
+    "name" : "robotStartValues",
+    "kp" : 20.0,
+    "ki" : 0.0,
+    "kd" : 0.1,
+    "isOn" : false,
+    "setpoint" : 0.0
+}
+
