@@ -114,19 +114,19 @@ pico_add_extra_outputs(MotorActuation)
 
 
 
-add_executable(ServoActuation
-        Troubleshooting/Servo/ServoActuation.cpp
+add_executable(ServoActuationTester
+        Troubleshooting/Servo/ServoActuationTester.cpp
         )
 
-pico_enable_stdio_uart(ServoActuation 0)
-pico_enable_stdio_usb(ServoActuation 1)
+pico_enable_stdio_uart(ServoActuationTester 0)
+pico_enable_stdio_usb(ServoActuationTester 1)
 
-target_link_libraries(ServoActuation
+target_link_libraries(ServoActuationTester
         pico_stdlib
         hardware_pwm
         )
 
-pico_add_extra_outputs(ServoActuation)
+pico_add_extra_outputs(ServoActuationTester)
 
 
 

@@ -1,12 +1,12 @@
 import tkinter as tk
-import serial
+#import serial
 
-serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
+#serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
 
 # =============================================================================
 # ROBOT CONTROL PANEL
 # =============================================================================
-# This fi le is organized into sections so it is easier to understand and change.
+# This file is organized into sections so it is easier to understand and change.
 #
 # The main idea:
 # 1. The "state" dictionaries store the current values shown in the window.

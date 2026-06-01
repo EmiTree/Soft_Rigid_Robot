@@ -7,6 +7,7 @@ SERVOOOO
 - Servo Actuation in pico
 
 PID BETER???
+- timestep / delay fixen
 - deadband and response curve
 
 GRAFIEKJES???
@@ -15,4 +16,6 @@ GRAFIEKJES???
 NAVIGATIE???
 - met setpoint?
 
-#####- MPU code source
+
+
+#####- MPU code source - done
