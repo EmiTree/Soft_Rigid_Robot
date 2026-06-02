@@ -10,6 +10,14 @@
 */
 const int PWM_WRAP = 20000 - 1;
 
+
+/*
+    Continuous-rotation servo pulse widths:
+        1000 us = full speed one direction
+        1500 us = stop
+        2000 us = full speed the other direction
+*/
+// Is that right? My data sheet says the input pwm value is 500us-2500us.
 const int SERVO_MIN_US = 1000;
 const int SERVO_STOP_US = 1500;
 const int SERVO_MAX_US = 2000;
@@ -284,3 +292,6 @@ bool ServoActuation::movement1() {
 
     return runMoves(moves, ServoCount);
 }
+
+
+

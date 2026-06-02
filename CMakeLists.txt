@@ -160,3 +160,17 @@ target_link_libraries(MotorMpuDebug
         )
 
 pico_add_extra_outputs(MotorMpuDebug)
+
+add_executable(ServoMovementTuning
+        Troubleshooting/Servo/ServoMovementTuning.cpp
+        )
+
+pico_enable_stdio_uart(ServoMovementTuning 0)
+pico_enable_stdio_usb(ServoMovementTuning 1)
+
+target_link_libraries(ServoMovementTuning
+        pico_stdlib
+        hardware_pwm
+        )
+
+pico_add_extra_outputs(ServoMovementTuning)

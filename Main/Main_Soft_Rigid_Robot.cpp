@@ -62,6 +62,12 @@ void handleSerialCommands();
 void printSettings();
 void printHelp();
 void printLiveValues();
+void clearCommandBuffer();
+void processCommand();
+void handleSerialCommands();
+void printSettings();
+void printHelp();
+void printLiveValues();
 
 int main() {
     stdio_init_all();
@@ -176,8 +182,15 @@ void forceStopEverything() {
 
     printf("\nFORCE STOP: PID off, motors off\n");
 }
-
-
+/*
+    This function logs parameter changes in a consistent format that can be parsed by the Python graphing tool. It is called whenever a parameter is changed through a serial command.
+*/
+void logParameterChange(const char* parameter, float oldValue, float newValue) {
+    printf("PARAM_CHANGE,%s,%.6f,%.6f\n",
+           parameter,
+           oldValue,
+           newValue);
+}
 /*
     Clear the typed command.
 */
@@ -263,8 +276,18 @@ void processCommand() {
                 motorDriver.stop();
                 printf("\nPID stopped, motors off\n");
             } else if ((strcmp(subCommand, "setpoint") == 0 || strcmp(subCommand, "set") == 0) && parts == 3) { // If the subcommand is "setpoint" or "set", and a numeric value is provided, update the PID setpoint to that value.
+                float oldValue = setpoint;
+
                 setpoint = value;
+
+                logParameterChange(
+                    "setpoint",
+                    oldValue,
+                    setpoint
+                );
+
                 resetPid();
+
                 printf("\nsetpoint set to %.2f\n", setpoint);
             } else if (strcmp(subCommand, "settings") == 0) { // If the subcommand is "settings", print the current PID settings.
                 printSettings();
@@ -282,20 +305,53 @@ void processCommand() {
             if (strcmp(subCommand, "settings") == 0) {
                 motorConverter.printSettings();
             } else if (strcmp(subCommand, "pidlimit") == 0 && parts == 3) {
+                float oldValue = motorConverter.getPidOutputLimit();
+
                 motorConverter.setPidOutputLimit(value);
+
+                logParameterChange(
+                    "pidlimit",
+                    oldValue,
+                    motorConverter.getPidOutputLimit()
+                );
                 resetPid();
                 printf("\npidOutputLimit set to %.2f\n", motorConverter.getPidOutputLimit());
             } else if (strcmp(subCommand, "maxpwm") == 0 && parts == 3) {
+                float oldValue = motorConverter.getMaxPwm();
+
                 motorConverter.setMaxPwm(value);
+
+                logParameterChange(
+                    "maxpwm",
+                    oldValue,
+                    motorConverter.getMaxPwm()
+                );
                 resetPid();
                 printf("\nmaxPwm set to %.2f\n", motorConverter.getMaxPwm());
             } else if (strcmp(subCommand, "startpwm") == 0 && parts == 3) {
+                float oldValue = motorConverter.getMotorStartPwm();
+
                 motorConverter.setMotorStartPwm(value);
+
+                logParameterChange(
+                    "startpwm",
+                    oldValue,
+                    motorConverter.getMotorStartPwm()
+                );
+
                 resetPid();
                 printf("\nmotorStartPwm set to %.2f\n", motorConverter.getMotorStartPwm());
             } else if (strcmp(subCommand, "deadband") == 0) {
                 if (parts == 3) {
+                    float oldValue = motorConverter.getDeadband();
+
                     motorConverter.setDeadband(value);
+
+                    logParameterChange(
+                        "deadband",
+                        oldValue,
+                        motorConverter.getDeadband()
+                    );
                     motorConverter.setDeadbandEnabled(true);
                     printf("\nmotor deadband set to %.4f\n", motorConverter.getDeadband());
                 } else if (strstr(commandBuffer, "off") != nullptr) {
@@ -308,7 +364,15 @@ void processCommand() {
                 resetPid();
             } else if (strcmp(subCommand, "curve") == 0) {
                 if (parts == 3) {
+                    float oldValue = motorConverter.getResponseCurve();
+
                     motorConverter.setResponseCurve(value);
+
+                    logParameterChange(
+                        "curve",
+                        oldValue,
+                        motorConverter.getResponseCurve()
+                    );
                     motorConverter.setResponseCurveEnabled(true);
                     printf("\nmotor response curve set to %.4f\n", motorConverter.getResponseCurve());
                 } else if (strstr(commandBuffer, "off") != nullptr) {
@@ -374,17 +438,41 @@ void processCommand() {
             printf("\nmotorStartPwm set to %.2f\n", motorConverter.getMotorStartPwm());
         } else if (strcmp(command, "kp") == 0 && parts >= 2) {
             float typedValue = (parts == 2) ? (float)atof(subCommand) : value;
+            float oldValue = pid.getKp();
+
             pid.setKp(typedValue);
+
+            logParameterChange(
+                "kp",
+                oldValue,
+                pid.getKp()
+            );
             resetPid();
             printf("\nKp set to %.4f\n", typedValue);
         } else if (strcmp(command, "ki") == 0 && parts >= 2) {
             float typedValue = (parts == 2) ? (float)atof(subCommand) : value;
+            float oldValue = pid.getKi();
+
             pid.setKi(typedValue);
+
+            logParameterChange(
+                "ki",
+                oldValue,
+                pid.getKi()
+            );
             resetPid();
             printf("\nKi set to %.4f\n", typedValue);
         } else if (strcmp(command, "kd") == 0 && parts >= 2) {
             float typedValue = (parts == 2) ? (float)atof(subCommand) : value;
+            float oldValue = pid.getKd();
+
             pid.setKd(typedValue);
+
+            logParameterChange(
+                "kd",
+                oldValue,
+                pid.getKd()
+            );
             resetPid();
             printf("\nKd set to %.4f\n", typedValue);
         } else if (strcmp(command, "stopmotors") == 0) {
