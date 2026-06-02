@@ -118,6 +118,15 @@ MOTOR_SETTINGS = [
     },
 ]
 
+NAVIGATION_COMMANDS = [
+    {"button_text": "Lean Forward", "command": "setpoint forward"},
+    {"button_text": "Lean Backward", "command": "setpoint backward"},
+    {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
+    {"button_text": "Go Forward", "command": "setpoint forward"},
+    {"button_text": "Go Backward", "command": "setpoint backward"},
+    {"button_text": "Stand Still", "command": "setpoint balancing"},
+]
+
 GENERAL_COMMANDS = [
     {"button_text": "Start PID", "command": "pid start"},
     {"button_text": "Stop PID", "command": "pid stop"},
@@ -527,6 +536,13 @@ def build_motor_section(parent):
 def build_general_section(parent):
     """Create the general command buttons."""
     for command_info in GENERAL_COMMANDS:
+        tk.Button(
+            parent,
+            text=command_info["button_text"],
+            width=15,
+            command=lambda c=command_info["command"]: send_to_pico(c),
+        ).pack(side="left", padx=5)
+    for command_info in NAVIGATION_COMMANDS:
         tk.Button(
             parent,
             text=command_info["button_text"],
