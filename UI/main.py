@@ -1,5 +1,8 @@
 import tkinter as tk
 #import serial
+import json 
+with open("config.json", "r") as jsonfile:
+    configValues = json.load(jsonfile)
 
 # Set correct com port for pico
 #serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
@@ -31,11 +34,12 @@ DARK_BUTTON_ACTIVE = "#505050"
 # =============================================================================
 # CURRENT ROBOT VALUES
 # =============================================================================
-
+setpoint = configValues['setpoint']
+setpoint_original = setpoint
 pid_values = {
-    "Kp": 20.0,
-    "Ki": 0.0,
-    "Kd": 0.05,
+    "Kp": configValues['kp'],
+    "Ki": configValues['ki'],
+    "Kd": configValues['kd'],
 }
 
 servo_positions = {
@@ -46,9 +50,9 @@ servo_positions = {
 }
 
 motor_values = {
-    "max_pwm": 80,
-    "motor_start_pwm": 20,
-    "pid_output_limit": 60,
+    "max_pwm": configValues['maxPWM'],
+    "motor_start_pwm": configValues['motorStartPWM'],
+    "pid_output_limit": configValues['pidOutputLimit'],
 }
 
 status_label = None
@@ -114,13 +118,35 @@ MOTOR_SETTINGS = [
     },
 ]
 
+NAVIGATION_COMMANDS = [
+    {"button_text": "Lean Forward +0.1", "step_size": 0.1, "command": "setpoint forward"},
+    {"button_text": "Lean Backward -0.1", "step_size": -0.1, "command": "setpoint backward"},
+    {"button_text": "Go Forward", "step_size": 0.5, "command": "setpoint forward"},
+    {"button_text": "Go Backward", "step_size": -0.5, "command": "setpoint backward"}
+]
+
 GENERAL_COMMANDS = [
     {"button_text": "Start PID", "command": "pid start"},
     {"button_text": "Stop PID", "command": "pid stop"},
-    {"button_text": "FORCE STOP", "command": "FORCE"},
+    {"button_text": "FORCE STOP", "command": "FORCE"}
 ]
 
 
+BALANCING_COMMANDS = [
+    {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
+    {"button_text": "Stand Still", "command": "setpoint balancing"}
+]
+def boot():
+    print("         Starting...         ")
+    send_to_pico(f"kp {pid_values['Kp']}")
+    send_to_pico(f"ki {pid_values['Ki']}")    
+    send_to_pico(f"kd {pid_values['Kd']}")
+ 
+    send_to_pico(f"pid setpoint {setpoint}")
+    send_to_pico(f"motor maxpwm {motor_values['max_pwm']}")
+    send_to_pico(f"motor maxpwm {motor_values['motor_start_pwm']}")
+    send_to_pico(f"motor maxpwm {motor_values['pid_output_limit']}")
+ 
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -163,7 +189,7 @@ def send_to_pico(command):
     print("Sending:", command)
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
-    serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
+    #serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
     
     if status_label is not None:
         status_label.config(text=f"Last command sent: {command}")
@@ -371,7 +397,21 @@ def zero_all_servos(servo_labels):
         zero_continuous_servo(servo_number, speed)
         update_servo_setting_label(servo_labels[servo_number], setting)
 
+def lean(lean_amount): 
+    global setpoint
+    """Lean the robot forward by changing the setpoint. """
+    setpoint = round(setpoint + lean_amount, 2)
+    send_to_pico(f"setpoint {setpoint}")
 
+def stand_still():
+    print("Standing still")
+    setpoint = setpoint_original
+    send_to_pico(f"setpoint {setpoint}")
+
+def save_original_setpoint():
+    global setpoint_original
+    print("Saving original setpoint:", setpoint)
+    setpoint_original = setpoint
 # =============================================================================
 # UI BUILDING FUNCTIONS
 # =============================================================================
@@ -519,6 +559,27 @@ def build_general_section(parent):
             width=15,
             command=lambda c=command_info["command"]: send_to_pico(c),
         ).pack(side="left", padx=5)
+    for command_info in NAVIGATION_COMMANDS:
+        tk.Button(
+            parent,
+            text=command_info["button_text"],
+            width=15,
+            command=lambda c = command_info["step_size"]: lean(c),
+        ).pack(side="left", padx=5)
+    
+    tk.Button(
+        parent,
+        text="Stand Still",
+        width=15,
+        command=lambda: stand_still(),
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        parent,
+        text="Balancing Achieved",
+        width=15,
+        command=lambda: save_original_setpoint(),
+    ).pack(side="left", padx=5)
 
 def build_control_settings_section(parent):
     """Create deadband and response curve controls."""
@@ -752,5 +813,6 @@ def create_app():
 # =============================================================================
 
 if __name__ == "__main__":
+    boot()
     app = create_app()
     app.mainloop()

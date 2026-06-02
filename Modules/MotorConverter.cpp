@@ -87,7 +87,7 @@ MotorCommand MotorConverter::convert(float pidOutput) {
         float safeDeadband = clampFloat(deadband, 0.0f, 0.95f);
 
         if (effort < safeDeadband) {
-            return command;
+            return command; //sets the PWM signal to 0 because the effort is within the deadband
         }
 
         /*
@@ -111,6 +111,11 @@ MotorCommand MotorConverter::convert(float pidOutput) {
         responseCurve = 1.5 or 2.0 makes small corrections gentler.
 
         If responseCurveEnabled is false, this stays linear.
+
+
+        The response curve is possibly not needed. This can correct the PID tuning.
+        If the angle is great, the response curve will change the PID output to become extra high
+        If the angle is small, the correction will be less. 
     */
     if (responseCurveEnabled) {
         float safeCurve = clampFloat(responseCurve, 0.1f, 5.0f);
