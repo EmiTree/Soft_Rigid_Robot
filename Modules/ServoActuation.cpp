@@ -272,11 +272,11 @@ bool ServoActuation::servoNumberToIndex(int servoNumber, int &servoIndex) const 
     return true;
 }
 
-programMovement [[servo1, speed , time], [2] ,[3]
+// programMovement [[servo1, speed , time], [2] ,[3]
 // start making movements here. Example movement1 is added to the header file. You can call it from main to test it, or make your own movements.
 bool ServoActuation::movement1() {
     ServoMove moves[ServoCount] = {
-        servo1Movement {1, 5.0f, 3000},  // Servo 1: speed +5 for 3 seconds
+        {1, 5.0f, 3000},  // Servo 1: speed +5 for 3 seconds
         {2, 2.0f, 2000},  // Servo 2: speed +2 for 2 seconds
         {3, 7.0f, 6000},  // Servo 3: speed +7 for 6 seconds
         {4, 2.0f, 4000}   // Servo 4: speed +2 for 4 seconds

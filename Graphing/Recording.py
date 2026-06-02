@@ -182,25 +182,39 @@ def plot_samples():
     ]
 
     # Create a 5x2 grid. That gives 10 graph spaces.
-    # We use 9 of them and turn off the empty one.
-    fig, axes = plt.subplots(5, 2, figsize=(14, 12), sharex=True)
+    # We use 9 of them and hide the empty one.
+    fig, axes = plt.subplots(
+        5,
+        2,
+        figsize=(14, 12),
+        sharex=True,
+        constrained_layout=True,
+    )
 
-    # Flatten turns the 5x2 axes grid into one simple list.
     axes = axes.flatten()
 
-    for axis, (title, key, color) in zip(axes, graphs):
+    for index, (axis, (title, key, color)) in enumerate(zip(axes, graphs)):
         axis.plot(times, [row[key] for row in samples], color=color)
-        axis.set_title(title)
-        axis.set_xlabel("Time (seconds)")
-        axis.set_ylabel(title)
+        axis.set_title(title, fontsize=10)
+        axis.set_ylabel(title, fontsize=9)
         axis.grid(True)
+        axis.tick_params(axis="both", labelsize=8)
+
+        # Force pwmA and pwmB graphs to always show 0 to 100.
+        if key == "pwmA" or key == "pwmB":
+            axis.set_ylim(0, 100)
+            axis.set_yticks([0, 25, 50, 75, 100])
+
+        # Only put the x-axis label on the bottom row.
+        # This prevents text from overlapping between graphs.
+        if index >= 8:
+            axis.set_xlabel("Time (seconds)", fontsize=9)
 
     # Turn off the one empty graph box.
     for axis in axes[len(graphs):]:
         axis.axis("off")
 
-    fig.suptitle("Robot values over time")
-    fig.tight_layout()
+    fig.suptitle("Robot values over time", fontsize=14)
 
     plt.show(block=False)
     plt.pause(0.1)
