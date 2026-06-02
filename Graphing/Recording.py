@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import serial
 from serial.tools import list_ports
 
+auto_print_lines_to_hide = 0
 
 # This pattern looks for the exact line your C++ code prints when you type "print":
 # angle=... | pid=... | p=... | i=... | d=... | motor=... | pwmA=... | pwmB=...
@@ -86,9 +87,8 @@ def parse_values(line):
 
 def serial_reader(ser):
     global start_time
+    global auto_print_lines_to_hide
 
-    # This runs constantly in the background.
-    # It reads every line coming from the robot.
     while running:
         try:
             raw_line = ser.readline()
@@ -99,41 +99,43 @@ def serial_reader(ser):
         if not raw_line:
             continue
 
-        # Decode the bytes from serial into normal text.
         line = raw_line.decode(errors="ignore").strip()
-
-        # Print everything from the robot, so you can still see messages/errors.
-        if line:
-            print(line)
-
         values = parse_values(line)
 
-        # Only store data when recording is turned on.
         if recording and values is not None:
             now = time.time()
 
-            # The first recorded sample becomes time = 0.
             if start_time is None:
                 start_time = now
 
-            row = {
+            samples.append({
                 "time": now - start_time,
                 **values,
-            }
+            })
 
-            samples.append(row)
+            continue
 
+        # Hide the extra lines caused by Python automatically sending "print".
+        if recording and auto_print_lines_to_hide > 0:
+            auto_print_lines_to_hide -= 1
+            continue
+
+        # Only show normal robot messages.
+        if line and values is None:
+            print(f"\n{line}")
 
 def print_command_sender(ser, sample_rate):
-    # This decides how often Python asks the robot for values.
-    # Example: sample_rate = 10 means 10 times per second.
+    global auto_print_lines_to_hide
+
     delay = 1.0 / sample_rate
 
     while running:
         if recording:
             try:
-                # Ask the C++ code to print one set of live values.
                 with serial_lock:
+                    # Your C++ "print" command sends several lines.
+                    # We hide those automatic lines so the terminal stays usable.
+                    auto_print_lines_to_hide += 8
                     ser.write(b"print\n")
             except serial.SerialException as error:
                 print(f"\nSerial write error: {error}")
@@ -166,32 +168,36 @@ def plot_samples():
     times = [row["time"] for row in samples]
 
     graphs = [
-        ("Angle", "angle"),
-        ("PID total", "pid_total"),
-        ("P", "p"),
-        ("I", "i"),
-        ("D", "d"),
-        ("Motor output", "motor_output"),
-        ("pwmA", "pwmA"),
-        ("pwmB", "pwmB"),
+        ("Angle", "angle", "tab:blue"),
+        ("PID total", "pid_total", "tab:orange"),
+        ("P", "p", "tab:green"),
+        ("I", "i", "tab:red"),
+        ("D", "d", "tab:purple"),
+        ("Motor output", "motor_output", "tab:brown"),
+        ("pwmA", "pwmA", "tab:pink"),
+        ("pwmB", "pwmB", "tab:cyan"),
     ]
 
-    # Create one graph underneath another, all sharing the same time axis.
-    fig, axes = plt.subplots(len(graphs), 1, sharex=True, figsize=(12, 14))
+    # Create a 4x2 grid: 4 rows and 2 columns.
+    fig, axes = plt.subplots(4, 2, figsize=(14, 10), sharex=True)
 
-    for axis, (title, key) in zip(axes, graphs):
-        axis.plot(times, [row[key] for row in samples])
+    # Flatten turns the 4x2 axes grid into one simple list,
+    # so we can loop over it easily.
+    axes = axes.flatten()
+
+    for axis, (title, key, color) in zip(axes, graphs):
+        axis.plot(times, [row[key] for row in samples], color=color)
+        axis.set_title(title)
+        axis.set_xlabel("Time (seconds)")
         axis.set_ylabel(title)
         axis.grid(True)
-
-    axes[-1].set_xlabel("Time (seconds)")
 
     fig.suptitle("Robot values over time")
     fig.tight_layout()
 
-    plt.show()
-
-
+    plt.show(block=False)
+    plt.pause(0.1)
+    
 def handle_user_commands(ser):
     global recording
     global start_time
@@ -216,48 +222,40 @@ def handle_user_commands(ser):
         command = input("> ").strip()
 
         if command == "start recording":
-            # Start a fresh recording.
             samples = []
             start_time = None
             recording = True
             print("Recording started.")
 
         elif command == "stop recording":
-            # Stop recording and immediately show the graphs.
             recording = False
             print(f"Recording stopped. Samples recorded: {len(samples)}")
             plot_samples()
 
         elif command == "clear recording":
-            # Delete the current recorded data.
             samples = []
             start_time = None
             print("Recording cleared.")
 
         elif command == "plot":
-            # Show the graph again without recording new data.
             plot_samples()
 
         elif command == "save":
-            # Save data with a timestamped filename.
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             save_csv(f"robot_recording_{timestamp}.csv")
 
         elif command == "quit":
-            # Close the Python recorder.
             running = False
             print("Closing recorder.")
 
         elif command:
-            # If it is not a Python command, send it directly to the robot.
             with serial_lock:
                 ser.write((command + "\n").encode())
-
-
+    
 def main():
     # Read optional settings from the terminal command.
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", help="Serial port, for example COM3")
+    parser.add_argument("--port", default="COM10", help="Serial port, for example COM10")
     parser.add_argument("--baud", type=int, default=115200)
     parser.add_argument("--sample-rate", type=float, default=10.0)
     args = parser.parse_args()

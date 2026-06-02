@@ -155,7 +155,6 @@ int main() {
     }
 
     return 0;
-    sleep_ms(10);
 }
 
 //-------------start of functions that were declared above main() but defined after main()-----------
