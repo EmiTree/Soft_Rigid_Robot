@@ -1,11 +1,32 @@
 import tkinter as tk
-#import serial
+import serial
+from pygame import mixer
+from os.path import join
+mixer.init()
+
+def load_sound(name):
+    class NoneSound:
+        def play(self):
+            pass
+
+    if not mixer.get_init():
+        return NoneSound()
+
+    fullname = join('soundFiles', name)
+    sound = mixer.Sound(fullname)
+
+    return sound
+
+click_sound = load_sound("Click 2.wav")
+
+
+
 import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
 # Set correct com port for pico
-#serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
+serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
 # =============================================================================
 # ROBOT CONTROL PANEL
@@ -187,9 +208,10 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
+    click_sound.play()
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
-    #serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
+    serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
     
     if status_label is not None:
         status_label.config(text=f"Last command sent: {command}")
