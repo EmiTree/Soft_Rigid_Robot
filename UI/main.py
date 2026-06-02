@@ -1,9 +1,11 @@
 import tkinter as tk
-import serial
-
+#import serial
+import json 
+with open("config.json", "r") as jsonfile:
+    configValues = json.load(jsonfile)
 
 # Set correct com port for pico
-serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
+#serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
 
 # =============================================================================
 # ROBOT CONTROL PANEL
@@ -32,11 +34,12 @@ DARK_BUTTON_ACTIVE = "#505050"
 # =============================================================================
 # CURRENT ROBOT VALUES
 # =============================================================================
+setpoint = configValues['setpoint']
 
 pid_values = {
-    "Kp": 20.0,
-    "Ki": 0.0,
-    "Kd": 0.05,
+    "Kp": configValues['kp'],
+    "Ki": configValues['ki'],
+    "Kd": configValues['kd'],
 }
 
 servo_positions = {
@@ -47,9 +50,9 @@ servo_positions = {
 }
 
 motor_values = {
-    "max_pwm": 80,
-    "motor_start_pwm": 20,
-    "pid_output_limit": 60,
+    "max_pwm": configValues['maxPWM'],
+    "motor_start_pwm": configValues['motorStartPWM'],
+    "pid_output_limit": configValues['pidOutputLimit'],
 }
 
 status_label = None
@@ -121,7 +124,17 @@ GENERAL_COMMANDS = [
     {"button_text": "FORCE STOP", "command": "FORCE"},
 ]
 
-
+def boot():
+    print("         Starting...         ")
+    send_to_pico(f"kp {pid_values['Kp']}")
+    send_to_pico(f"ki {pid_values['Ki']}")    
+    send_to_pico(f"kd {pid_values['Kd']}")
+ 
+    send_to_pico(f"pid setpoint {setpoint}")
+    send_to_pico(f"motor maxpwm {motor_values['max_pwm']}")
+    send_to_pico(f"motor maxpwm {motor_values['motor_start_pwm']}")
+    send_to_pico(f"motor maxpwm {motor_values['pid_output_limit']}")
+ 
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
@@ -164,7 +177,7 @@ def send_to_pico(command):
     print("Sending:", command)
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
-    serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
+    #serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
     
     if status_label is not None:
         status_label.config(text=f"Last command sent: {command}")
@@ -753,5 +766,6 @@ def create_app():
 # =============================================================================
 
 if __name__ == "__main__":
+    boot()
     app = create_app()
     app.mainloop()
