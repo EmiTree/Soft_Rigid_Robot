@@ -21,7 +21,8 @@ VALUE_PATTERN = re.compile(
     r"d=([-+]?\d*\.?\d+)\s*\|\s*"
     r"motor=([-+]?\d*\.?\d+)\s*\|\s*"
     r"pwmA=([-+]?\d*\.?\d+)\s*\|\s*"
-    r"pwmB=([-+]?\d*\.?\d+)"
+    r"pwmB=([-+]?\d*\.?\d+)\s*\|\s*"
+    r"dt=([-+]?\d*\.?\d+)"
 )
 # This pattern looks for lines like "PARAM_CHANGE,paramName,oldValue,newValue" that your C++ code prints when you change a parameter.
 PARAM_CHANGE_PATTERN = re.compile(
@@ -39,8 +40,8 @@ FIELDS = [
     "motor_output",
     "pwmA",
     "pwmB",
+    "dt",
 ]
-
 
 # These variables control the recorder.
 recording = False
@@ -85,6 +86,7 @@ def parse_values(line):
         "motor_output": values[5],
         "pwmA": values[6],
         "pwmB": values[7],
+        "dt": values[8],
     }
 
 
@@ -152,7 +154,7 @@ def print_command_sender(ser, sample_rate):
                 with serial_lock:
                     # Your C++ "print" command sends several lines.
                     # We hide those automatic lines so the terminal stays usable.
-                    auto_print_lines_to_hide += 8
+                    auto_print_lines_to_hide += 8 # The number of lines your "print" command causes to be printed.
                     ser.write(b"print\n")
             except serial.SerialException as error:
                 print(f"\nSerial write error: {error}")
@@ -193,20 +195,25 @@ def plot_samples():
         ("Motor output", "motor_output", "tab:brown"),
         ("pwmA", "pwmA", "tab:pink"),
         ("pwmB", "pwmB", "tab:cyan"),
+        ("dt", "dt", "tab:gray"),
     ]
 
-    # Create a 4x2 grid: 4 rows and 2 columns.
-    fig, axes = plt.subplots(4, 2, figsize=(14, 10), sharex=True)
+    # Create a 5x2 grid. That gives 10 graph spaces.
+    # We use 9 of them and hide the empty one.
+    fig, axes = plt.subplots(
+        5,
+        2,
+        figsize=(14, 12),
+        sharex=True,
+        constrained_layout=True,
+    )
 
-    # Flatten turns the 4x2 axes grid into one simple list,
-    # so we can loop over it easily.
     axes = axes.flatten()
 
-    for axis, (title, key, color) in zip(axes, graphs):
+    for index, (axis, (title, key, color)) in enumerate(zip(axes, graphs)):
         axis.plot(times, [row[key] for row in samples], color=color)
-        axis.set_title(title)
-        axis.set_xlabel("Time (seconds)")
-        axis.set_ylabel(title)
+        axis.set_title(title, fontsize=10)
+        axis.set_ylabel(title, fontsize=9)
         axis.grid(True)
         for change in parameter_changes:
 
@@ -227,9 +234,23 @@ def plot_samples():
                 fontsize=6,
                 verticalalignment="top"
             )
+        axis.tick_params(axis="both", labelsize=8)
 
-    fig.suptitle("Robot values over time")
-    fig.tight_layout()
+        # Force pwmA and pwmB graphs to always show 0 to 100.
+        if key == "pwmA" or key == "pwmB":
+            axis.set_ylim(0, 100)
+            axis.set_yticks([0, 25, 50, 75, 100])
+
+        # Only put the x-axis label on the bottom row.
+        # This prevents text from overlapping between graphs.
+        if index >= 8:
+            axis.set_xlabel("Time (seconds)", fontsize=9)
+
+    # Turn off the one empty graph box.
+    for axis in axes[len(graphs):]:
+        axis.axis("off")
+
+    fig.suptitle("Robot values over time", fontsize=14)
 
     plt.show(block=False)
     plt.pause(0.1)
