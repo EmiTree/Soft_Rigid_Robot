@@ -18,7 +18,7 @@ PIDController pid(5.0f, 0.01f, 0.5f); // PID tuning constants: Kp, Ki, Kd.
 MotorConverter motorConverter(60.0f, 80.0f, 20.0f); // Motor conversion settings: PID output limit, max PWM, motor start PWM.
 MPU6050Sensor mpu(i2c0, 0x68, 4, 5); // MPU6050 sensor (i2cPort, address, sdaPin, sclPin)
 MotorDriver motorDriver(21, 22, 27, 26); // MotorDriver(pinP1, pinP2, pinQ1, pinQ2) P1 = GP21 = Linkerwiel naar voren, P2 = GP22 = Linker naar achter, Q1 = GP27 = Rechterwiel naar voren, Q2  = GP26 = rechterwiel naar achter
-ServoActuation servoActuation(14, 15, 16, 17);
+ServoActuation servoActuation(14, 15, 16, 17); 
 
 
 bool pidRunning = false; // Starts with PID off for safety. Type "start" to turn on PID and "stop" to turn it off.
@@ -47,6 +47,7 @@ float lastDValue = 0.0f;
 float lastMotorOutput = 0.0f;
 float lastPwmA = 0.0f;
 float lastPwmB = 0.0f;
+float lastDt = 0.0f;
 
 /*
 These functions exist somewhere later in this file. Here are their names, what they return, and what inputs they need.
@@ -110,6 +111,7 @@ int main() {
         absolute_time_t current_time = get_absolute_time();
         float dt = absolute_time_diff_us(last_time, current_time) / 1000000.0f;
         last_time = current_time;
+        lastDt = dt;
 
         if (mpu.update(dt)) {
             mpuOk = true;
@@ -460,17 +462,17 @@ void printLiveValues() {
     printf("pidRunning = %d\n", pidRunning);
     printf("roll = %.2f\n", lastRoll);
     printf("pitch = %.2f\n", lastPitch);
-    printf("angle=%.2f | pid=%.2f | p=%.2f | i=%.2f | d=%.2f | motor=%.2f | pwmA=%.2f | pwmB=%.2f\n",
-           lastAngle,
-           lastPidOutput,
-           lastPValue,
-           lastIValue,
-           lastDValue,
-           lastMotorOutput,
-           lastPwmA,
-           lastPwmB);
-    printf("-------------------\n");
-}
+    printf("angle=%.2f | pid=%.2f | p=%.2f | i=%.2f | d=%.2f | motor=%.2f | pwmA=%.2f | pwmB=%.2f | dt=%.4f\n",
+        lastAngle,
+        lastPidOutput,
+        lastPValue,
+        lastIValue,
+        lastDValue,
+        lastMotorOutput,
+        lastPwmA,
+        lastPwmB,
+        lastDt);
+    }
 
 /*
     Print command list.

@@ -21,7 +21,8 @@ VALUE_PATTERN = re.compile(
     r"d=([-+]?\d*\.?\d+)\s*\|\s*"
     r"motor=([-+]?\d*\.?\d+)\s*\|\s*"
     r"pwmA=([-+]?\d*\.?\d+)\s*\|\s*"
-    r"pwmB=([-+]?\d*\.?\d+)"
+    r"pwmB=([-+]?\d*\.?\d+)\s*\|\s*"
+    r"dt=([-+]?\d*\.?\d+)"
 )
 
 
@@ -36,8 +37,8 @@ FIELDS = [
     "motor_output",
     "pwmA",
     "pwmB",
+    "dt",
 ]
-
 
 # These variables control the recorder.
 recording = False
@@ -82,6 +83,7 @@ def parse_values(line):
         "motor_output": values[5],
         "pwmA": values[6],
         "pwmB": values[7],
+        "dt": values[8],
     }
 
 
@@ -135,7 +137,7 @@ def print_command_sender(ser, sample_rate):
                 with serial_lock:
                     # Your C++ "print" command sends several lines.
                     # We hide those automatic lines so the terminal stays usable.
-                    auto_print_lines_to_hide += 8
+                    auto_print_lines_to_hide += 8 # The number of lines your "print" command causes to be printed.
                     ser.write(b"print\n")
             except serial.SerialException as error:
                 print(f"\nSerial write error: {error}")
@@ -176,13 +178,14 @@ def plot_samples():
         ("Motor output", "motor_output", "tab:brown"),
         ("pwmA", "pwmA", "tab:pink"),
         ("pwmB", "pwmB", "tab:cyan"),
+        ("dt", "dt", "tab:gray"),
     ]
 
-    # Create a 4x2 grid: 4 rows and 2 columns.
-    fig, axes = plt.subplots(4, 2, figsize=(14, 10), sharex=True)
+    # Create a 5x2 grid. That gives 10 graph spaces.
+    # We use 9 of them and turn off the empty one.
+    fig, axes = plt.subplots(5, 2, figsize=(14, 12), sharex=True)
 
-    # Flatten turns the 4x2 axes grid into one simple list,
-    # so we can loop over it easily.
+    # Flatten turns the 5x2 axes grid into one simple list.
     axes = axes.flatten()
 
     for axis, (title, key, color) in zip(axes, graphs):
@@ -191,6 +194,10 @@ def plot_samples():
         axis.set_xlabel("Time (seconds)")
         axis.set_ylabel(title)
         axis.grid(True)
+
+    # Turn off the one empty graph box.
+    for axis in axes[len(graphs):]:
+        axis.axis("off")
 
     fig.suptitle("Robot values over time")
     fig.tight_layout()
