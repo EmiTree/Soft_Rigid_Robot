@@ -23,7 +23,10 @@ VALUE_PATTERN = re.compile(
     r"pwmA=([-+]?\d*\.?\d+)\s*\|\s*"
     r"pwmB=([-+]?\d*\.?\d+)"
 )
-
+# This pattern looks for lines like "PARAM_CHANGE,paramName,oldValue,newValue" that your C++ code prints when you change a parameter.
+PARAM_CHANGE_PATTERN = re.compile(
+    r"PARAM_CHANGE,([^,]+),([^,]+),([^,]+)"
+)
 
 # These are the columns that will be saved if you type "save".
 FIELDS = [
@@ -44,7 +47,7 @@ recording = False
 running = True
 start_time = None
 samples = []
-
+parameter_changes = []
 # This lock stops two Python threads from writing to the robot at the same time.
 serial_lock = threading.Lock()
 
@@ -100,6 +103,20 @@ def serial_reader(ser):
             continue
 
         line = raw_line.decode(errors="ignore").strip()
+        change_match = PARAM_CHANGE_PATTERN.search(line)
+
+        if change_match:
+
+            if recording and start_time is not None:
+
+                parameter_changes.append({
+                    "time": time.time() - start_time,
+                    "parameter": change_match.group(1),
+                    "old": float(change_match.group(2)),
+                    "new": float(change_match.group(3)),
+                })
+
+            continue
         values = parse_values(line)
 
         if recording and values is not None:
@@ -191,6 +208,25 @@ def plot_samples():
         axis.set_xlabel("Time (seconds)")
         axis.set_ylabel(title)
         axis.grid(True)
+        for change in parameter_changes:
+
+            axis.axvline(
+                change["time"],
+                linestyle="--",
+                alpha=0.4
+            )
+
+            ymax = axis.get_ylim()[1]
+
+            axis.text(
+                change["time"],
+                ymax,
+                f'{change["parameter"]}\n'
+                f'{change["old"]:.2f}->{change["new"]:.2f}',
+                rotation=90,
+                fontsize=6,
+                verticalalignment="top"
+            )
 
     fig.suptitle("Robot values over time")
     fig.tight_layout()
@@ -203,7 +239,7 @@ def handle_user_commands(ser):
     global start_time
     global samples
     global running
-
+    global parameter_changes
     # These are commands for the Python recorder.
     print()
     print("Python recorder commands:")
@@ -223,9 +259,11 @@ def handle_user_commands(ser):
 
         if command == "start recording":
             samples = []
+            parameter_changes = []  
             start_time = None
             recording = True
             print("Recording started.")
+
 
         elif command == "stop recording":
             recording = False
