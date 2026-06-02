@@ -33,82 +33,39 @@ PIDController::PIDController(float kp, float ki, float kd) {
 
     This function is called repeatedly in the main loop while PID is running.
 */
-float PIDController::update(float setpoint, float measuredAngle, float measuredAngularVelocity, float dt, float &pValue, float &iValue, float &dValue) {
-    /*
-        error is how far away the measured value is from the target.
-
-        Example:
-            setpoint = 0
-            measuredAngle = 5
-
-            error = 0 - 5 = -5
-
-        That means the system is 5 degrees away from the target in the negative
-        correction direction.
-    */
+float PIDController::update(
+    float setpoint,
+    float measuredAngle,
+    float measuredAngularVelocity,
+    float dt,
+    float &pValue,
+    float &iValue,
+    float &dValue
+) {
     float error = setpoint - measuredAngle;
 
-    /*
-        Integral term memory.
-
-        This adds up error over time.
-
-        If the tentacle is slightly off target for a long time, the integral
-        grows and helps push it back. This is useful for correcting steady,
-        persistent error.
-
-        dt is included because the loop timing matters. Error for 0.01 seconds
-        should count less than error for 1 full second.
-    */
-
-    // This is old and probabily does not work. Now trying to use the raw gyroscope data instead of integrating
-    // integral += error * dt; 
-    
-    // This uses the gyroscope data
-    integral = measuredAngularVelocity;
-
-    /*
-        derivative estimates how quickly the error is changing.
-
-        It starts at 0 in case dt is invalid.
-    */
-    float derivative = 0.0f;
-
-    /*
-        Only calculate derivative if dt is greater than zero.
-
-        Dividing by zero would be a math error, so this check protects the code.
-    */
     if (dt > 0.0f) {
-        derivative = (error - previousError) / dt;
+        integral += error * dt;
+
+        // Anti-windup clamp. Tune this limit for your robot/tentacle.
+        const float integralLimit = 100.0f;
+        if (integral > integralLimit) integral = integralLimit;
+        if (integral < -integralLimit) integral = -integralLimit;
     }
 
-    /*
-        Calculate the three PID parts.
+    float derivative = 0.0f;
 
-        P:
-            Proportional. Reacts to the current error.
+    if (dt > 0.0f) {
+        // Use gyro angular velocity directly for damping.
+        derivative = -measuredAngularVelocity;
+    }
 
-        I:
-            Integral. Reacts to accumulated past error.
-
-        D:
-            Derivative. Reacts to how quickly the error is changing.
-    */
     pValue = kp * error;
     iValue = ki * integral;
     dValue = kd * derivative;
 
-    /*
-        Save the current error so the next update can compare against it.
-    */
     previousError = error;
 
-    /*
-        The final PID output is the sum of the three parts.
-
-        Your main code later converts this number into motor direction and PWM.
-    */
     return pValue + iValue + dValue;
 }
 

@@ -1,8 +1,8 @@
 import tkinter as tk
-import serial
+#import serial
 
 # Set correct com port for pico
-serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
+#serial = serial.Serial(port='COM12', baudrate = 115200, timeout=.1)
 
 # =============================================================================
 # ROBOT CONTROL PANEL
