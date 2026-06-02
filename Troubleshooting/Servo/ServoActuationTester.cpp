@@ -1,9 +1,9 @@
-#include "pico/stdlib.h"
-#include "hardware/pwm.h"
+#include "pico/stdlib.h" // Pico basics: GPIO pins, USB serial, time functions, sleep_ms().
+#include "hardware/pwm.h" //   PWM output, used to control the servos.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h> // printf() and sscanf(). This is used for serial communication and command parsing.
+#include <stdlib.h> // atof(), which converts text to a float number.
+#include <string.h> // strcmp() and strstr(), used to compare typed commands.
 
 /*
     Standalone 4-servo actuation troubleshooting code.
@@ -39,7 +39,7 @@ const int SERVO_2_PIN = 15;
 const int SERVO_3_PIN = 16;
 const int SERVO_4_PIN = 17;
 
-const int SERVO_PINS[4] = {
+const int SERVO_PINS[4] = { // This makes it easier to loop through the pins when needed, instead of writing separate code for each servo pin.
     SERVO_1_PIN,
     SERVO_2_PIN,
     SERVO_3_PIN,
