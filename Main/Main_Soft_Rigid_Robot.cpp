@@ -325,7 +325,21 @@ void processCommand() {
                 printHelp();
             }
         
+                } else if (strcmp(command, "servo") == 0 && parts >= 2) {
+            if (strcmp(subCommand, "movement1") == 0) {
+                servoActuation.movement1();
+                printf("\nServo movement1 started\n");
 
+            } else if (strcmp(subCommand, "stop") == 0) {
+                servoActuation.stopAll();
+                printf("\nAll servos stopped\n");
+
+            } else {
+                printf("\nUnknown servo command: %s\n", commandBuffer);
+                printHelp();
+            }
+
+        
 
         // Can we pls delete this if it is not needed?
         
@@ -453,6 +467,8 @@ void printSettings() {
     printf("--------------------\n");
 }
 
+
+
 /*
     Print the latest measured values once.
 */
@@ -516,5 +532,9 @@ void printHelp() {
     printf("motor deadband on/off  -> enable or disable deadband\n");
     printf("motor curve 1.5        -> soften small corrections\n");
     printf("motor curve on/off     -> enable or disable response curve\n");
+
+    printf("\nServo commands:\n");
+    printf("servo movement1       -> run servo movement pattern 1\n");
+    printf("servo stop            -> stop all servos\n");
     printf("\n");
 }
