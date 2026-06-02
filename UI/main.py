@@ -35,7 +35,7 @@ DARK_BUTTON_ACTIVE = "#505050"
 # CURRENT ROBOT VALUES
 # =============================================================================
 setpoint = configValues['setpoint']
-
+setpoint_original = setpoint
 pid_values = {
     "Kp": configValues['kp'],
     "Ki": configValues['ki'],
@@ -119,20 +119,23 @@ MOTOR_SETTINGS = [
 ]
 
 NAVIGATION_COMMANDS = [
-    {"button_text": "Lean Forward", "command": "setpoint forward"},
-    {"button_text": "Lean Backward", "command": "setpoint backward"},
-    {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
-    {"button_text": "Go Forward", "command": "setpoint forward"},
-    {"button_text": "Go Backward", "command": "setpoint backward"},
-    {"button_text": "Stand Still", "command": "setpoint balancing"},
+    {"button_text": "Lean Forward +0.1", "step_size": 0.1, "command": "setpoint forward"},
+    {"button_text": "Lean Backward -0.1", "step_size": -0.1, "command": "setpoint backward"},
+    {"button_text": "Go Forward", "step_size": 0.5, "command": "setpoint forward"},
+    {"button_text": "Go Backward", "step_size": -0.5, "command": "setpoint backward"}
 ]
 
 GENERAL_COMMANDS = [
     {"button_text": "Start PID", "command": "pid start"},
     {"button_text": "Stop PID", "command": "pid stop"},
-    {"button_text": "FORCE STOP", "command": "FORCE"},
+    {"button_text": "FORCE STOP", "command": "FORCE"}
 ]
 
+
+BALANCING_COMMANDS = [
+    {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
+    {"button_text": "Stand Still", "command": "setpoint balancing"}
+]
 def boot():
     print("         Starting...         ")
     send_to_pico(f"kp {pid_values['Kp']}")
@@ -394,7 +397,21 @@ def zero_all_servos(servo_labels):
         zero_continuous_servo(servo_number, speed)
         update_servo_setting_label(servo_labels[servo_number], setting)
 
+def lean(lean_amount): 
+    global setpoint
+    """Lean the robot forward by changing the setpoint. """
+    setpoint = round(setpoint + lean_amount, 2)
+    send_to_pico(f"setpoint {setpoint}")
 
+def stand_still():
+    print("Standing still")
+    setpoint = setpoint_original
+    send_to_pico(f"setpoint {setpoint}")
+
+def save_original_setpoint():
+    global setpoint_original
+    print("Saving original setpoint:", setpoint)
+    setpoint_original = setpoint
 # =============================================================================
 # UI BUILDING FUNCTIONS
 # =============================================================================
@@ -547,8 +564,22 @@ def build_general_section(parent):
             parent,
             text=command_info["button_text"],
             width=15,
-            command=lambda c=command_info["command"]: send_to_pico(c),
+            command=lambda c = command_info["step_size"]: lean(c),
         ).pack(side="left", padx=5)
+    
+    tk.Button(
+        parent,
+        text="Stand Still",
+        width=15,
+        command=lambda: stand_still(),
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        parent,
+        text="Balancing Achieved",
+        width=15,
+        command=lambda: save_original_setpoint(),
+    ).pack(side="left", padx=5)
 
 def build_control_settings_section(parent):
     """Create deadband and response curve controls."""
