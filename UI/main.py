@@ -27,7 +27,9 @@ import json
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+
+
+#serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
@@ -213,7 +215,7 @@ def send_to_pico(command):
     print("Sending:", command)
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
-    serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
+    #serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
     
     if status_label is not None:
         status_label.config(text=f"Last command sent: {command}")
