@@ -1,33 +1,14 @@
 import tkinter as tk
-import serial
-from pygame import mixer
+#import serial
+#from pygame import mixer
 from os.path import join
 import json 
 
-mixer.init()
-
-def load_sound(name):
-    class NoneSound:
-        def play(self):
-            pass
-
-    if not mixer.get_init():
-        return NoneSound()
-
-    fullname = join('soundFiles', name)
-    sound = mixer.Sound(fullname)
-
-    return sound
-
-#click_sound = load_sound("Click 2.wav")
-click_sound = mixer.Sound("C:\Windows\Media\Windows Ding.wav")
 
 
 import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
-
-
 
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
