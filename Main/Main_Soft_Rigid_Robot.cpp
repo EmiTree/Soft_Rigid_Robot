@@ -18,7 +18,7 @@ PIDController pid(5.0f, 0.01f, 0.5f); // PID tuning constants: Kp, Ki, Kd.
 MotorConverter motorConverter(100.0f, 80.0f, 20.0f); // Motor conversion settings: PID output limit, max PWM, motor start PWM.
 MPU6050Sensor mpu(i2c0, 0x68, 4, 5); // MPU6050 sensor (i2cPort, address, sdaPin, sclPin)
 MotorDriver motorDriver(21, 22, 27, 26); // MotorDriver(pinP1, pinP2, pinQ1, pinQ2) P1 = GP21 = Linkerwiel naar voren, P2 = GP22 = Linker naar achter, Q1 = GP27 = Rechterwiel naar voren, Q2  = GP26 = rechterwiel naar achter
-ServoActuation servoActuation(14, 15, 16, 17); 
+ServoActuation servoActuation(18, 15, 16, 17); 
 
 
 bool pidRunning = false; // Starts with PID off for safety. Type "start" to turn on PID and "stop" to turn it off.
@@ -395,7 +395,52 @@ void processCommand() {
             if (strcmp(subCommand, "movement1") == 0) {
                 servoActuation.movement1();
                 printf("\nServo movement1 started\n");
+            } else if (strcmp(subCommand, "CurveForwards") == 0) {
+                servoActuation.CurveForwards();
+                printf("\nServo CurveForwards started\n");
 
+            } else if (strcmp(subCommand, "CurveBackwards") == 0) {
+                servoActuation.CurveBackwards();
+                printf("\nServo CurveBackwards started\n");
+
+            } else if (strcmp(subCommand, "CurveRight") == 0) {
+                servoActuation.CurveRight();
+                printf("\nServo CurveRight started\n");
+
+            } else if (strcmp(subCommand, "CurveLeft") == 0) {
+                servoActuation.CurveLeft();
+                printf("\nServo CurveLeft started\n");
+
+            } else if (strcmp(subCommand, "LeanServoForwards") == 0) {
+                servoActuation.LeanServoForwards();
+                printf("\nServo LeanServoForwards started\n");
+
+            } else if (strcmp(subCommand, "LeanServoBackwards") == 0) {
+                servoActuation.LeanServoBackwards();
+                printf("\nServo LeanServoBackwards started\n");
+
+            } else if (strcmp(subCommand, "LeanServoRight") == 0) {
+                servoActuation.LeanServoRight();
+                printf("\nServo LeanServoRight started\n");
+
+            } else if (strcmp(subCommand, "LeanServoLeft") == 0) {
+                servoActuation.LeanServoLeft();
+                printf("\nServo LeanServoLeft started\n");
+            } else if (strcmp(subCommand, "CurveForwardsUndo") == 0) {
+                servoActuation.CurveForwardsUndo();
+                printf("\nServo CurveForwardsUndo started\n");
+
+            } else if (strcmp(subCommand, "CurveBackwardsUndo") == 0) {
+                servoActuation.CurveBackwardsUndo();
+                printf("\nServo CurveBackwardsUndo started\n");
+
+            } else if (strcmp(subCommand, "CurveRightUndo") == 0) {
+                servoActuation.CurveRightUndo();
+                printf("\nServo CurveRightUndo started\n");
+
+            } else if (strcmp(subCommand, "CurveLeftUndo") == 0) {
+                servoActuation.CurveLeftUndo();
+                printf("\nServo CurveLeftUndo started\n");
             } else if (strcmp(subCommand, "stop") == 0) {
                 servoActuation.stopAll();
                 printf("\nAll servos stopped\n");
@@ -626,5 +671,24 @@ void printHelp() {
     printf("\nServo commands:\n");
     printf("servo movement1       -> run servo movement pattern 1\n");
     printf("servo stop            -> stop all servos\n");
+    printf("\nServo commands:\n");
+    printf("servo movement1              -> run servo movement pattern 1\n");
+
+    printf("servo CurveForwards          -> curve the arm forwards\n");
+    printf("servo CurveBackwards         -> curve the arm backwards\n");
+    printf("servo CurveRight             -> curve the arm right\n");
+    printf("servo CurveLeft              -> curve the arm left\n");
+
+    printf("servo LeanServoForwards      -> lean the servos forwards\n");
+    printf("servo LeanServoBackwards     -> lean the servos backwards\n");
+    printf("servo LeanServoRight         -> lean the servos right\n");
+    printf("servo LeanServoLeft          -> lean the servos left\n");
+
+    printf("servo CurveForwardsUndo      -> undo curve forwards\n");
+    printf("servo CurveBackwardsUndo     -> undo curve backwards\n");
+    printf("servo CurveRightUndo         -> undo curve right\n");
+    printf("servo CurveLeftUndo          -> undo curve left\n");
+
+    printf("servo stop                   -> stop all servos\n");
     printf("\n");
 }

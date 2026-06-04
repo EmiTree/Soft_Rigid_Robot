@@ -7,7 +7,9 @@
 
 const int ServoCount = 4;
 
-const int SERVO_1_PIN = 14;
+// het is of 13
+
+const int SERVO_1_PIN = 18;
 const int SERVO_2_PIN = 15;
 const int SERVO_3_PIN = 16;
 const int SERVO_4_PIN = 17;
@@ -34,15 +36,15 @@ struct ServoMove {
     uint32_t durationMs;
 };
 
-float Servo1MovementSpeed = 5.0f;
-float Servo2MovementSpeed = 2.0f;
-float Servo3MovementSpeed = 7.0f;
-float Servo4MovementSpeed = 2.0f;
+float Servo1MovementSpeed = 50.0f;
+float Servo2MovementSpeed = 50.0f;
+float Servo3MovementSpeed = 50.0f;
+float Servo4MovementSpeed = 50.0f;
 
 uint32_t Servo1MovementTime = 3000;
-uint32_t Servo2MovementTime = 2000;
-uint32_t Servo3MovementTime = 6000;
-uint32_t Servo4MovementTime = 4000;
+uint32_t Servo2MovementTime = 3000;
+uint32_t Servo3MovementTime = 3000;
+uint32_t Servo4MovementTime = 3000;
 
 float currentSpeeds[ServoCount] = {0.0f, 0.0f, 0.0f, 0.0f};
 bool timedMoveActive[ServoCount] = {false, false, false, false};

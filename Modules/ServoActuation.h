@@ -36,6 +36,21 @@ public:
     // add different movements
     bool movement1();
 
+    bool CurveForwards();
+    bool CurveBackwards();
+    bool CurveRight();
+    bool CurveLeft();
+
+    bool LeanServoForwards();
+    bool LeanServoBackwards();
+    bool LeanServoRight();
+    bool LeanServoLeft();
+
+    bool CurveForwardsUndo();
+    bool CurveBackwardsUndo();
+    bool CurveRightUndo();
+    bool CurveLeftUndo();
+
     void stop(int servoNumber);
     void stopAll();
     void update();

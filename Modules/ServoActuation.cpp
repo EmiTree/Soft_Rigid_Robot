@@ -284,14 +284,143 @@ bool ServoActuation::servoNumberToIndex(int servoNumber, int &servoIndex) const 
 // start making movements here. Example movement1 is added to the header file. You can call it from main to test it, or make your own movements.
 bool ServoActuation::movement1() {
     ServoMove moves[ServoCount] = {
-        {1, 5.0f, 3000},  // Servo 1: speed +5 for 3 seconds
-        {2, 2.0f, 2000},  // Servo 2: speed +2 for 2 seconds
-        {3, 7.0f, 6000},  // Servo 3: speed +7 for 6 seconds
-        {4, 2.0f, 4000}   // Servo 4: speed +2 for 4 seconds
+        {1, 80.0f, 3000},  // Servo 1: speed +80 for 3 seconds
+        {2, 80.0f, 3000},  // Servo 2: speed +80 for 3 seconds
+        {3, 0.0f, 1000},  // Servo 3: speed 0 for 1 second
+        {4, 0.0f, 1000}   // Servo 4: speed 0 for 1 second
     };
 
     return runMoves(moves, ServoCount);
 }
 
+bool ServoActuation::CurveForwards() {
+    ServoMove moves[ServoCount] = {
+        {1, 80.0f, 3000},
+        {2, 80.0f, 3000},
+        {3, 0.0f, 2000},
+        {4, 0.0f, 2000}
+    };
 
+    return runMoves(moves, ServoCount);
+}
 
+bool ServoActuation::CurveBackwards() {
+    ServoMove moves[ServoCount] = {
+        {1, -80.0f, 3000},
+        {2, -80.0f, 3000},
+        {3, 0.0f, 2000},
+        {4, 0.0f, 2000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveRight() {
+    ServoMove moves[ServoCount] = {
+        {1, 80.0f, 3000},
+        {2, 0.0f, 3000},
+        {3, 0.0f, 3000},
+        {4, -80.0f, 3000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveLeft() {
+    ServoMove moves[ServoCount] = {
+        {1, 0.0f, 3000},
+        {2, 80.0f, 3000},
+        {3, 0.0f, 3000},
+        {4, 80.0f, 3000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::LeanServoForwards() {
+    ServoMove moves[ServoCount] = {
+        {1, 50.0f, 1000},
+        {2, 50.0f, 1000},
+        {3, 0.0f, 1000},
+        {4, 0.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::LeanServoBackwards() {
+    ServoMove moves[ServoCount] = {
+        {1, -50.0f, 1000},
+        {2, -50.0f, 1000},
+        {3, 0.0f, 1000},
+        {4, 0.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::LeanServoRight() {
+    ServoMove moves[ServoCount] = {
+        {1, 50.0f, 1000},
+        {2, 0.0f, 1000},
+        {3, 0.0f, 1000},
+        {4, 50.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::LeanServoLeft() {
+    ServoMove moves[ServoCount] = {
+        {1, 0.0f, 1000},
+        {2, 50.0f, 1000},
+        {3, 50.0f, 1000},
+        {4, 0.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveForwardsUndo() {
+    ServoMove moves[ServoCount] = {
+        {1, -30.0f, 1000},
+        {2, -30.0f, 1000},
+        {3, 0.0f, 2000},
+        {4, 0.0f, 2000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveBackwardsUndo() {
+    ServoMove moves[ServoCount] = {
+        {1, 30.0f, 1000},
+        {2, 30.0f, 1000},
+        {3, 0.0f, 2000},
+        {4, 0.0f, 2000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveRightUndo() {
+    ServoMove moves[ServoCount] = {
+        {1, -30.0f, 1000},
+        {2, 0.0f, 1000},
+        {3, 0.0f, 2000},
+        {4, -30.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
+
+bool ServoActuation::CurveLeftUndo() {
+    ServoMove moves[ServoCount] = {
+        {1, 0.0f, 1000},
+        {2, 30.0f, 1000},
+        {3, 30.0f, 1000},
+        {4, 0.0f, 1000}
+    };
+
+    return runMoves(moves, ServoCount);
+}
