@@ -2,6 +2,8 @@ import tkinter as tk
 import serial
 from pygame import mixer
 from os.path import join
+import json 
+
 mixer.init()
 
 def load_sound(name):
@@ -17,16 +19,16 @@ def load_sound(name):
 
     return sound
 
-click_sound = load_sound("Click 2.wav")
-
+#click_sound = load_sound("Click 2.wav")
+click_sound = mixer.Sound("C:\Windows\Media\Windows Ding.wav")
 
 
 import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-# Set correct com port for pico
-serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+
 
 # =============================================================================
 # ROBOT CONTROL PANEL
