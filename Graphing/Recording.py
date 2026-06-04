@@ -49,6 +49,7 @@ running = True
 start_time = None
 samples = []
 parameter_changes = []
+
 # This lock stops two Python threads from writing to the robot at the same time.
 serial_lock = threading.Lock()
 
