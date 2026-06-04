@@ -588,6 +588,8 @@ def build_general_section(parent):
         command=lambda: save_original_setpoint(),
     ).pack(side="left", padx=5)
 
+
+
 def build_control_settings_section(parent):
     """Create deadband and response curve controls."""
 
