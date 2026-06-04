@@ -1,11 +1,39 @@
 import tkinter as tk
 import serial
+<<<<<<< HEAD
+=======
+from pygame import mixer
+from os.path import join
+mixer.init()
+
+def load_sound(name):
+    class NoneSound:
+        def play(self):
+            pass
+
+    if not mixer.get_init():
+        return NoneSound()
+
+    fullname = join('soundFiles', name)
+    sound = mixer.Sound(fullname)
+
+    return sound
+
+click_sound = load_sound("Click 2.wav")
+
+
+
+>>>>>>> a840fb9ab9ffea46442379254ad03c94a6dac0ab
 import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
 # Set correct com port for pico
+<<<<<<< HEAD
 serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+=======
+serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+>>>>>>> a840fb9ab9ffea46442379254ad03c94a6dac0ab
 
 # =============================================================================
 # ROBOT CONTROL PANEL
@@ -79,7 +107,7 @@ SPECIFIC_SERVO_ACTIONS = [
 # =============================================================================
 
 PID_SETTINGS = [
-    {"name": "Kp", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "kp"},
+    {"name": "Kp", "steps": [0.1, 1.0], "decimal_places": 4, "command_name": "kp"},
     {"name": "Ki", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "ki"},
     {"name": "Kd", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "kd"},
 ]
@@ -90,6 +118,7 @@ SERVO_SETTINGS = [
     {"servo_number": 3, "speed": 40, "time": 0.5},
     {"servo_number": 4, "speed": 40, "time": 0.5},
 ]
+
 
 MOTOR_SETTINGS = [
     {
@@ -187,6 +216,7 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
+    click_sound.play()
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
     serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
