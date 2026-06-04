@@ -57,7 +57,7 @@ float PIDController::update(
 
     if (dt > 0.0f) {
         // Use gyro angular velocity directly for damping.
-        derivative = -measuredAngularVelocity;
+        derivative = (error - previousError) / dt;
     }
 
     pValue = kp * error;
@@ -75,6 +75,7 @@ float PIDController::update(
     This does not change kp, ki, or kd.
     It only clears the stored previous error and integral buildup.
 */
+
 void PIDController::reset() {
     previousError = 0.0f;
     integral = 0.0f;

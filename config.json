@@ -1,10 +1,10 @@
 {
     "name" : "robotStartValues",
-    "kp" : 20.0,
+    "kp" : 60.0,
     "ki" : 0.0,
-    "kd" : 0.1,
+    "kd" : 0.01,
     "isOn" : false,
-    "setpoint" : 0.0,
+    "setpoint" : -6.0,
     "maxPWM" : 80.0,
     "motorStartPWM" : 20.0,
     "pidOutputLimit" : 60

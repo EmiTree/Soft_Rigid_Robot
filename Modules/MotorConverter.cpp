@@ -17,7 +17,7 @@ MotorConverter::MotorConverter(float pidOutputLimit, float maxPwm, float motorSt
         Response curve is off by default because 1.0 is the normal linear
         behavior.
     */
-    deadband = 0.03f;
+    deadband = 0.0f;
     responseCurve = 1.0f;
 
     deadbandEnabled = true;
