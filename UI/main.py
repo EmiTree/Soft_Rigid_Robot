@@ -26,11 +26,7 @@ with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
 # Set correct com port for pico
-<<<<<<< HEAD
 serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
-=======
-serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
->>>>>>> a840fb9ab9ffea46442379254ad03c94a6dac0ab
 
 # =============================================================================
 # ROBOT CONTROL PANEL
