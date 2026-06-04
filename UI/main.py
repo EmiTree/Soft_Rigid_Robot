@@ -1,31 +1,7 @@
 import tkinter as tk
 import serial
-<<<<<<< HEAD
-#from pygame import mixer
-from os.path import join
-#mixer.init()
-
-#ben je dom: resetknop voor Ki, 
-
-
-'''def load_sound(name):
-    class NoneSound:
-        def play(self):
-            pass
-
-    if not mixer.get_init():
-        return NoneSound()
-
-    fullname = join('soundFiles', name)
-    sound = mixer.Sound(fullname)
-
-    return sound
-
-click_sound = load_sound("Click 2.wav")'''
-=======
 from os.path import join
 import json 
->>>>>>> 9e6c23e4657fd91e02a441c863a77345904b4d05
 
 
 
@@ -33,17 +9,11 @@ import json
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-<<<<<<< HEAD
-# Set correct com port for pico
-serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
-#serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-=======
 picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 
 if picoIsConnected: serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
->>>>>>> 9e6c23e4657fd91e02a441c863a77345904b4d05
 
 # =============================================================================
 # ROBOT CONTROL PANEL
@@ -226,10 +196,6 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
-<<<<<<< HEAD
-    #click_sound.play()
-=======
->>>>>>> 9e6c23e4657fd91e02a441c863a77345904b4d05
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
     if picoIsConnected: serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
