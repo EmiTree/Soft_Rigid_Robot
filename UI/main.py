@@ -2,6 +2,8 @@ import tkinter as tk
 import serial
 from pygame import mixer
 from os.path import join
+import json 
+
 mixer.init()
 
 def load_sound(name):
@@ -17,11 +19,10 @@ def load_sound(name):
 
     return sound
 
-click_sound = load_sound("Click 2.wav")
+#click_sound = load_sound("Click 2.wav")
+click_sound = mixer.Sound("C:\Windows\Media\Windows Ding.wav")
 
 
-
-import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
