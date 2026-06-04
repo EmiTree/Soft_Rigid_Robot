@@ -79,7 +79,7 @@ SPECIFIC_SERVO_ACTIONS = [
 # =============================================================================
 
 PID_SETTINGS = [
-    {"name": "Kp", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "kp"},
+    {"name": "Kp", "steps": [0.1, 1.0], "decimal_places": 4, "command_name": "kp"},
     {"name": "Ki", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "ki"},
     {"name": "Kd", "steps": [0.01, 0.1], "decimal_places": 4, "command_name": "kd"},
 ]
@@ -90,6 +90,7 @@ SERVO_SETTINGS = [
     {"servo_number": 3, "speed": 40, "time": 0.5},
     {"servo_number": 4, "speed": 40, "time": 0.5},
 ]
+
 
 MOTOR_SETTINGS = [
     {
