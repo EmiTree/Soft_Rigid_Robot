@@ -18,7 +18,7 @@ PIDController pid(5.0f, 0.01f, 0.5f); // PID tuning constants: Kp, Ki, Kd.
 MotorConverter motorConverter(100.0f, 80.0f, 20.0f); // Motor conversion settings: PID output limit, max PWM, motor start PWM.
 MPU6050Sensor mpu(i2c0, 0x68, 4, 5); // MPU6050 sensor (i2cPort, address, sdaPin, sclPin)
 MotorDriver motorDriver(21, 22, 27, 26); // MotorDriver(pinP1, pinP2, pinQ1, pinQ2) P1 = GP21 = Linkerwiel naar voren, P2 = GP22 = Linker naar achter, Q1 = GP27 = Rechterwiel naar voren, Q2  = GP26 = rechterwiel naar achter
-ServoActuation servoActuation(14, 15, 16, 17); 
+ServoActuation servoActuation(18, 15, 16, 17); 
 
 
 bool pidRunning = false; // Starts with PID off for safety. Type "start" to turn on PID and "stop" to turn it off.

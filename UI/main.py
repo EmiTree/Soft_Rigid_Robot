@@ -1,12 +1,13 @@
 import tkinter as tk
 import serial
-<<<<<<< HEAD
-=======
-from pygame import mixer
+#from pygame import mixer
 from os.path import join
-mixer.init()
+#mixer.init()
 
-def load_sound(name):
+#ben je dom: resetknop voor Ki, 
+
+
+'''def load_sound(name):
     class NoneSound:
         def play(self):
             pass
@@ -19,21 +20,17 @@ def load_sound(name):
 
     return sound
 
-click_sound = load_sound("Click 2.wav")
+click_sound = load_sound("Click 2.wav")'''
 
 
 
->>>>>>> a840fb9ab9ffea46442379254ad03c94a6dac0ab
 import json 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
 # Set correct com port for pico
-<<<<<<< HEAD
 serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
-=======
-serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
->>>>>>> a840fb9ab9ffea46442379254ad03c94a6dac0ab
+#serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
 # =============================================================================
 # ROBOT CONTROL PANEL
@@ -150,8 +147,8 @@ MOTOR_SETTINGS = [
 NAVIGATION_COMMANDS = [
     {"button_text": "Lean Forward +0.1", "step_size": 0.1, "command": "setpoint forward"},
     {"button_text": "Lean Backward -0.1", "step_size": -0.1, "command": "setpoint backward"},
-    {"button_text": "Go Forward", "step_size": 0.5, "command": "setpoint forward"},
-    {"button_text": "Go Backward", "step_size": -0.5, "command": "setpoint backward"}
+    {"button_text": "Go Forward 0.01", "step_size": 0.01, "command": "setpoint forward"},
+    {"button_text": "Go Backward 0.01", "step_size": -0.01, "command": "setpoint backward"}
 ]
 
 GENERAL_COMMANDS = [
@@ -216,7 +213,7 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
-    click_sound.play()
+    #click_sound.play()
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
     serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
