@@ -329,7 +329,7 @@ bool ServoActuation::CurveRight() {
 bool ServoActuation::CurveLeft() {
     ServoMove moves[ServoCount] = {
         {1, 0.0f, 3000},
-        {2, 80.0f, 3000},
+        {2, -80.0f, 3000},
         {3, 0.0f, 3000},
         {4, 80.0f, 3000}
     };
@@ -408,7 +408,7 @@ bool ServoActuation::CurveRightUndo() {
         {1, -30.0f, 1000},
         {2, 0.0f, 1000},
         {3, 0.0f, 2000},
-        {4, -30.0f, 1000}
+        {4, 30.0f, 1000}
     };
 
     return runMoves(moves, ServoCount);
@@ -418,7 +418,7 @@ bool ServoActuation::CurveLeftUndo() {
     ServoMove moves[ServoCount] = {
         {1, 0.0f, 1000},
         {2, 30.0f, 1000},
-        {3, 30.0f, 1000},
+        {3, -30.0f, 1000},
         {4, 0.0f, 1000}
     };
 

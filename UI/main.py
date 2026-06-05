@@ -1,15 +1,39 @@
 import tkinter as tk
 import serial
+#from pygame import mixer
+from os.path import join
+#mixer.init()
+
+#ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
+
+
+'''def load_sound(name):
+    class NoneSound:
+        def play(self):
+            pass
+
+    if not mixer.get_init():
+        return NoneSound()
+
+    fullname = join('soundFiles', name)
+    sound = mixer.Sound(fullname)
+
+    return sound
+
+click_sound = load_sound("Click 2.wav")'''
 from os.path import join
 import json 
  
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+# Set correct com port for pico
+#serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+#serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 
 
-if picoIsConnected: serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
@@ -127,8 +151,14 @@ MOTOR_SETTINGS = [
 NAVIGATION_COMMANDS = [
     {"button_text": "Lean Forward +0.1", "step_size": 0.1, "command": "setpoint forward"},
     {"button_text": "Lean Backward -0.1", "step_size": -0.1, "command": "setpoint backward"},
-    {"button_text": "Go Forward 0.01", "step_size": 0.01, "command": "setpoint forward"},
-    {"button_text": "Go Backward 0.01", "step_size": -0.01, "command": "setpoint backward"}
+    {"button_text": "Slow Forward 0.1", "step_size": 0.1, "command": "setpoint forward"},
+    {"button_text": "Slow Backward -0.1", "step_size": -0.1, "command": "setpoint backward"},
+    {"button_text": "Go Forward 0.2", "step_size": 0.2, "command": "setpoint forward"},
+    {"button_text": "Go Backward -0.2", "step_size": -0.2, "command": "setpoint backward"},
+    {"button_text": "Fast Forward 0.5", "step_size": 0.5, "command": "setpoint forward"},
+    {"button_text": "Fast Backward -0.5", "step_size": -0.5, "command": "setpoint backward"},
+    {"button_text": "Faster Forward 0.7", "step_size": 0.7, "command": "setpoint forward"},
+    {"button_text": "Faster Backward -0.7", "step_size": -0.7, "command": "setpoint backward"}
 ]
 
 GENERAL_COMMANDS = [
@@ -193,6 +223,7 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
+    #click_sound.play()
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
     if picoIsConnected: serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
@@ -565,13 +596,13 @@ def build_general_section(parent):
             width=15,
             command=lambda c=command_info["command"]: send_to_pico(c),
         ).pack(side="left", padx=5)
-    for command_info in NAVIGATION_COMMANDS:
-        tk.Button(
-            parent,
-            text=command_info["button_text"],
-            width=15,
-            command=lambda c = command_info["step_size"]: lean(c),
-        ).pack(side="left", padx=5)
+#    for command_info in NAVIGATION_COMMANDS:
+#        tk.Button(
+#            parent,
+#            text=command_info["button_text"],
+#            width=15,
+#            command=lambda c = command_info["step_size"]: lean(c),
+#        ).pack(side="left", padx=5)
     
     tk.Button(
         parent,
@@ -586,6 +617,17 @@ def build_general_section(parent):
         width=15,
         command=lambda: save_original_setpoint(),
     ).pack(side="left", padx=5)
+
+def build_navigation_section(parent):
+    """Create the navigation command buttons."""
+    for command_info in NAVIGATION_COMMANDS:
+        tk.Button(
+            parent,
+            text=command_info["button_text"],
+            width=15,
+            command=lambda c = command_info["step_size"]: lean(c),
+        ).pack(side="left", padx=5)
+
 
 
 
@@ -805,6 +847,9 @@ def create_app():
     general_frame = tk.LabelFrame(window, text="General", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
     general_frame.pack(fill="x", padx=10, pady=5)
     build_general_section(general_frame)
+    navigation_frame = tk.LabelFrame(window, text="Navigation", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
+    navigation_frame.pack(fill="x", padx=10, pady=5)
+    build_navigation_section(navigation_frame)
 
     status_label = tk.Label(
         window,
