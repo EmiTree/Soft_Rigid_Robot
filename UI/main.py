@@ -2,10 +2,7 @@ import tkinter as tk
 import serial
 from os.path import join
 import json 
-
-
-
-import json 
+ 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
