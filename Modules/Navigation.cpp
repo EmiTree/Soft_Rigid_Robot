@@ -2,17 +2,18 @@
 
 Navigation::Navigation(float movementSetpointOffset, float rotationExtraPwm) {
     this->movementSetpointOffset = movementSetpointOffset;
-    this->movementReturnSmoothingDivisor = 2.0f;
+    this->movementHoldOffset = 0.1f;
     this->rotationExtraPwm = rotationExtraPwm;
 
     movementDurationMs = 500;
-    movementReturnDurationMs = 250;
+    movementReturnDurationMs = 800;
     rotationDurationMs = 1000;
 
     movementDirection = MovementNone;
     rotationDirection = RotationNone;
 
     movementEndTime = get_absolute_time();
+    movementReturnStartTime = get_absolute_time();
     rotationEndTime = get_absolute_time();
 }
 
@@ -29,12 +30,35 @@ float Navigation::getActiveSetpoint(float balanceSetpoint) {
         return balanceSetpoint + movementSetpointOffset;
     }
 
-    if (movementDirection == MovementReturnForward) {
-        return balanceSetpoint - (movementSetpointOffset / movementReturnSmoothingDivisor);
+    if (movementDirection == MovementReturnForward || movementDirection == MovementReturnBackward) {
+        absolute_time_t now = get_absolute_time();
+
+        float elapsedMs = absolute_time_diff_us(movementReturnStartTime, now) / 1000.0f;
+        float progress = elapsedMs / movementReturnDurationMs;
+
+        if (progress < 0.0f) {
+            progress = 0.0f;
+        }
+
+        if (progress > 1.0f) {
+            progress = 1.0f;
+        }
+
+        float remainingOffset = movementHoldOffset + ((movementSetpointOffset - movementHoldOffset) * (1.0f - progress));
+
+        if (movementDirection == MovementReturnForward) {
+            return balanceSetpoint - remainingOffset;
+        }
+
+        return balanceSetpoint + remainingOffset;
     }
 
-    if (movementDirection == MovementReturnBackward) {
-        return balanceSetpoint + (movementSetpointOffset / movementReturnSmoothingDivisor);
+    if (movementDirection == MovementHoldForward) {
+        return balanceSetpoint - movementHoldOffset;
+    }
+
+    if (movementDirection == MovementHoldBackward) {
+        return balanceSetpoint + movementHoldOffset;
     }
 
     return balanceSetpoint;
@@ -93,12 +117,12 @@ void Navigation::setMovementSetpointOffset(float offset) {
     movementSetpointOffset = offset;
 }
 
-void Navigation::setMovementReturnSmoothingDivisor(float divisor) {
-    if (divisor < 1.0f) {
-        divisor = 1.0f;
+void Navigation::setMovementHoldOffset(float offset) {
+    if (offset < 0.0f) {
+        offset = -offset;
     }
 
-    movementReturnSmoothingDivisor = divisor;
+    movementHoldOffset = offset;
 }
 
 void Navigation::setRotationExtraPwm(float extraPwm) {
@@ -117,6 +141,10 @@ void Navigation::setMovementDurationMs(uint32_t durationMs) {
     movementDurationMs = durationMs;
 }
 
+void Navigation::setMovementReturnDurationMs(uint32_t durationMs) {
+    movementReturnDurationMs = durationMs;
+}
+
 void Navigation::setRotationDurationMs(uint32_t durationMs) {
     rotationDurationMs = durationMs;
 }
@@ -125,8 +153,8 @@ float Navigation::getMovementSetpointOffset() {
     return movementSetpointOffset;
 }
 
-float Navigation::getMovementReturnSmoothingDivisor() {
-    return movementReturnSmoothingDivisor;
+float Navigation::getMovementHoldOffset() {
+    return movementHoldOffset;
 }
 
 float Navigation::getRotationExtraPwm() {
@@ -135,6 +163,10 @@ float Navigation::getRotationExtraPwm() {
 
 uint32_t Navigation::getMovementDurationMs() {
     return movementDurationMs;
+}
+
+uint32_t Navigation::getMovementReturnDurationMs() {
+    return movementReturnDurationMs;
 }
 
 uint32_t Navigation::getRotationDurationMs() {
@@ -151,18 +183,27 @@ bool Navigation::isMoving() {
     if (absolute_time_diff_us(now, movementEndTime) <= 0) {
         if (movementDirection == MovementForward) {
             movementDirection = MovementReturnForward;
+            movementReturnStartTime = now;
             movementEndTime = make_timeout_time_ms(movementReturnDurationMs);
             return true;
         }
 
         if (movementDirection == MovementBackward) {
             movementDirection = MovementReturnBackward;
+            movementReturnStartTime = now;
             movementEndTime = make_timeout_time_ms(movementReturnDurationMs);
             return true;
         }
 
-        movementDirection = MovementNone;
-        return false;
+        if (movementDirection == MovementReturnForward) {
+            movementDirection = MovementHoldForward;
+            return true;
+        }
+
+        if (movementDirection == MovementReturnBackward) {
+            movementDirection = MovementHoldBackward;
+            return true;
+        }
     }
 
     return true;
