@@ -13,10 +13,11 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
+if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
@@ -51,6 +52,16 @@ csv_data = [] # This is for recording data
 
 setpoint = configValues['setpoint']
 setpoint_original = setpoint
+
+#navigation <o/
+movement_time_navigation = configValues['movementTimeNavigation']
+movement_time_rotation = configValues['rotationTimeNavigation']
+
+#ik ben dom
+# rotation_extra_pwm = configValues['rotationExtraPwm']
+# movement_setpoint_offset = configValues['movementSetpointOffset']
+
+
 pid_values = {
     "Kp": configValues['kp'],
     "Ki": configValues['ki'],
@@ -728,44 +739,44 @@ def build_control_settings_section(parent):
         width=18,
     )
 
-def nav_movement_time(direction, time): #direction is forward or backward
-    send_to_pico(f"nav {direction}")
-    send_to_pico(f"nav movementtime {time}")
+def nav_movement_time(rotate, direction, time): #direction is forward or backward #rotate is bool of je wilt draaien of niet
+    if rotate: 
+        send_to_pico(f"nav rotationtime {time}")
+        send_to_pico(f"nav rotate{direction}")
+    else:    
+        send_to_pico(f"nav movementtime {time}") 
+        send_to_pico(f"nav {direction}")
+    
 
+#amazing intuitive code
 
 def build_real_navigation_section(parent):
     tk.Button(
         parent,
-        text = "Forward 1000",
+        text = "forward.",
         width=10,
-        command=lambda d="forward", t="1000": nav_movement_time(d, t),
+        command=lambda r=False, d="forward", t=movement_time_navigation: nav_movement_time(r, d, t),
     ).grid(row = 0, column = 0, padx = 3, pady = 3)     
     tk.Button(
         parent,
-        text = "backward 1000",
+        text = "BACKWARD",
         width=10,
-        command=lambda d="backward", t="1000": nav_movement_time(d, t),
+        command=lambda r=False, d="backward", t=movement_time_navigation: nav_movement_time(r, d, t),
     ).grid(row = 1, column = 0, padx = 3, pady = 3) 
 
     tk.Button(
         parent,
-        text = "Foward 500",
+        text = "ROtaTE lEft",
         width=10,
-        command=lambda d="forward", t="500": nav_movement_time(d, t),
+        command=lambda r=True, d="Left", t=movement_time_rotation: nav_movement_time(r, d, t),
     ).grid(row = 0, column = 1, padx = 3, pady = 3) 
     tk.Button(
         parent,
-        text = "Backward 500",
+        text = "rotate right",
         width=10,
-        command=lambda d="backward", t="500": nav_movement_time(d, t),
+        command=lambda r=True, d="Right", t=movement_time_rotation: nav_movement_time(r, d, t),
     ).grid(row = 1, column = 1, padx = 3, pady = 3) 
-    tk.Button(
-        parent,
-        text = "Navigation 1",
-        width=10,
-        command=lambda d="forward", t="1000": nav_movement_time(d, t),
-    ).grid(row = 0, column = 4, padx = 3, pady = 3) 
-    
+
 def build_specific_servo_settings_section(parent):
     """Create preset buttons for specific tentacle movements.
 
