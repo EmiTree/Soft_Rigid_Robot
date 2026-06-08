@@ -3,7 +3,7 @@ import serial
 import time
 
 ser = serial.Serial('COM3', 115200)  # Adjust baud rate if needed
-setpoint = -5.5 #change set point after every balancing change
+#setpoint = -5.5 #change set point after every balancing change
 start_time = time.time()
 bent = False
 with open("TestvaluesbendingLeft08_3.csv", "w", newline="") as csvfile:
@@ -16,7 +16,7 @@ with open("TestvaluesbendingLeft08_3.csv", "w", newline="") as csvfile:
             data = ser.readline().decode('utf-8').strip()
 
             if data.startswith("A"):
-                angle = float(data[1:]) + setpoint  # Remove the "A%" prefix and convert to float 
+                angle = float(data[1:]) #+ setpoint  # Remove the "A%" prefix and convert to float 
 
                 if (time.time() - start_time >= 5) and not bent: 
                         print("Bleep bloop")
