@@ -12,10 +12,10 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+#picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 
-if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
