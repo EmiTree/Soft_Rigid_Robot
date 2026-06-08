@@ -6,6 +6,7 @@
 #include "MPU6050Sensor.h"  // Your own MPU6050 sensor class from Modules/MPU6050Sensor.
 #include "MotorDriver.h"
 #include "ServoActuation.h" 
+#include "Navigation.h"
 
 #include <stdio.h>            // printf() and sscanf().
 #include <stdlib.h>           // atof(), which converts text to a float number.
@@ -19,10 +20,13 @@ MotorConverter motorConverter(100.0f, 80.0f, 20.0f); // Motor conversion setting
 MPU6050Sensor mpu(i2c0, 0x68, 4, 5); // MPU6050 sensor (i2cPort, address, sdaPin, sclPin)
 MotorDriver motorDriver(21, 22, 27, 26); // MotorDriver(pinP1, pinP2, pinQ1, pinQ2) P1 = GP21 = Linkerwiel naar voren, P2 = GP22 = Linker naar achter, Q1 = GP27 = Rechterwiel naar voren, Q2  = GP26 = rechterwiel naar achter
 ServoActuation servoActuation(18, 15, 16, 17); 
+Navigation navigation(0.5f, 15.0f); // Navigation(movementSetpointOffset, rotationExtraPwm) movementSetpointOffset is how much the setpoint changes when you go forward or backward. rotationExtraPwm is how much extra PWM is added to the motors when you rotate.
 
 
 bool pidRunning = false; // Starts with PID off for safety. Type "start" to turn on PID and "stop" to turn it off.
 bool mpuOk = false; // This becomes true if the MPU6050 is successfully initialized and read. If it stays false, PID will not run
+
+
 
 /*
     Serial command input. 
@@ -126,14 +130,20 @@ int main() {
             float gx = mpu.getGyroX();
 
             if (pidRunning) {
-                pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
+                float activeSetpoint = navigation.getActiveSetpoint(setpoint);
+                pidOutput = pid.update(activeSetpoint, angle, gx, dt, pValue, iValue, dValue);
 
                 MotorCommand motorCommand = motorConverter.convert(pidOutput);
                 motorOutput = motorCommand.motorOutput;
                 pwmA = motorCommand.pwmA;
                 pwmB = motorCommand.pwmB;
 
-                motorDriver.drive(pwmA, pwmB);
+                float leftMotorOutput = motorCommand.leftMotorOutput;
+                float rightMotorOutput = motorCommand.rightMotorOutput;
+
+                navigation.applyRotation(leftMotorOutput, rightMotorOutput);
+
+                motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
             } else {
                 motorDriver.stop();
                 pid.reset();
@@ -343,6 +353,32 @@ void processCommand() {
 
                 resetPid();
                 printf("\nmotorStartPwm set to %.2f\n", motorConverter.getMotorStartPwm());
+            } else if (strcmp(subCommand, "leftstartpwm") == 0 && parts == 3) {
+                float oldValue = motorConverter.getLeftMotorStartPwm();
+
+                motorConverter.setLeftMotorStartPwm(value);
+
+                logParameterChange(
+                    "leftstartpwm",
+                    oldValue,
+                    motorConverter.getLeftMotorStartPwm()
+                );
+
+                resetPid();
+                printf("\nleftMotorStartPwm set to %.2f\n", motorConverter.getLeftMotorStartPwm());
+            } else if (strcmp(subCommand, "rightstartpwm") == 0 && parts == 3) {
+                float oldValue = motorConverter.getRightMotorStartPwm();
+
+                motorConverter.setRightMotorStartPwm(value);
+
+                logParameterChange(
+                    "rightstartpwm",
+                    oldValue,
+                    motorConverter.getRightMotorStartPwm()
+                );
+
+                resetPid();
+                printf("\nrightMotorStartPwm set to %.2f\n", motorConverter.getRightMotorStartPwm());
             } else if (strcmp(subCommand, "deadband") == 0) {
                 if (parts == 3) {
                     float oldValue = motorConverter.getDeadband();
@@ -390,8 +426,50 @@ void processCommand() {
                 printf("\nUnknown motor command: %s\n", commandBuffer);
                 printHelp();
             }
+        } else if (strcmp(command, "nav") == 0 && parts >= 2) {
+            if (strcmp(subCommand, "forward") == 0) {
+                navigation.moveForward();
+                printf("\nNavigation: forward for %lu ms\n", navigation.getMovementDurationMs());
+
+            } else if (strcmp(subCommand, "backward") == 0) {
+                navigation.moveBackward();
+                printf("\nNavigation: backward for %lu ms\n", navigation.getMovementDurationMs());
+
+            } else if (strcmp(subCommand, "rotateLeft") == 0) {
+                navigation.rotateLeft();
+                printf("\nNavigation: rotate left for %lu ms\n", navigation.getRotationDurationMs());
+
+            } else if (strcmp(subCommand, "rotateRight") == 0) {
+                navigation.rotateRight();
+                printf("\nNavigation: rotate right for %lu ms\n", navigation.getRotationDurationMs());
+
+            } else if (strcmp(subCommand, "setpointoffset") == 0 && parts == 3) {
+                navigation.setMovementSetpointOffset(value);
+                printf("\nNavigation setpoint offset set to %.2f\n", navigation.getMovementSetpointOffset());
+
+            } else if (strcmp(subCommand, "rotationextrapwm") == 0 && parts == 3) {
+                navigation.setRotationExtraPwm(value);
+                printf("\nNavigation rotation extra PWM set to %.2f\n", navigation.getRotationExtraPwm());
+
+            } else if (strcmp(subCommand, "movementtime") == 0 && parts == 3) {
+                navigation.setMovementDurationMs((uint32_t)value);
+                printf("\nNavigation movement time set to %lu ms\n", navigation.getMovementDurationMs());
+
+            } else if (strcmp(subCommand, "rotationtime") == 0 && parts == 3) {
+                navigation.setRotationDurationMs((uint32_t)value);
+                printf("\nNavigation rotation time set to %lu ms\n", navigation.getRotationDurationMs());
+
+            } else if (strcmp(subCommand, "stop") == 0 || strcmp(subCommand, "balance") == 0) {
+                navigation.stopMovement();
+                navigation.stopRotation();
+                printf("\nNavigation stopped, normal balance mode\n");
+
+            } else {
+                printf("\nUnknown navigation command: %s\n", commandBuffer);
+                printHelp();
+            }
         
-                } else if (strcmp(command, "servo") == 0 && parts >= 2) {
+        } else if (strcmp(command, "servo") == 0 && parts >= 2) {
             if (strcmp(subCommand, "movement1") == 0) {
                 servoActuation.movement1();
                 printf("\nServo movement1 started\n");
@@ -667,6 +745,20 @@ void printHelp() {
     printf("motor deadband on/off  -> enable or disable deadband\n");
     printf("motor curve 1.5        -> soften small corrections\n");
     printf("motor curve on/off     -> enable or disable response curve\n");
+    printf("motor leftstartpwm 22  -> minimum useful PWM percent for left wheel\n");
+    printf("motor rightstartpwm 18 -> minimum useful PWM percent for right wheel\n");
+
+    printf("\nNavigation commands:\n");
+    printf("nav forward            -> lean forward while balancing\n");
+    printf("nav backward           -> lean backward while balancing\n");
+    printf("nav rotateLeft         -> rotate left for 1 second\n");
+    printf("nav rotateRight        -> rotate right for 1 second\n");
+    printf("nav balance            -> return to normal balancing\n");
+    printf("nav stop               -> same as nav balance\n");
+    printf("nav setpointoffset 5        -> set forward/backward lean offset\n");
+    printf("nav rotationextrapwm 15     -> set extra PWM used for rotation\n");
+    printf("nav movementtime 1000      -> set how long forward/backward movement lasts (ms)\n");
+    printf("nav rotationtime 1000      -> set how long rotation lasts (ms)\n");
 
     printf("\nServo commands:\n");
     printf("servo movement1       -> run servo movement pattern 1\n");
