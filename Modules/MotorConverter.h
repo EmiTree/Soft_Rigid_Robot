@@ -27,6 +27,9 @@ struct MotorCommand {
     float motorOutput;
     float normalizedOutput;
     float scaledOutput;
+
+    float leftMotorOutput;
+    float rightMotorOutput;
 };
 
 class MotorConverter {
@@ -44,6 +47,12 @@ public:
     void setDeadbandEnabled(bool enabled);
     void setResponseCurveEnabled(bool enabled);
 
+    void setLeftMotorStartPwm(float value);
+    void setRightMotorStartPwm(float value);
+
+    float getLeftMotorStartPwm();
+    float getRightMotorStartPwm();
+
     float getPidOutputLimit();
     float getMaxPwm();
     float getMotorStartPwm();
@@ -58,7 +67,8 @@ public:
 private:
     float pidOutputLimit;
     float maxPwm;
-    float motorStartPwm;
+    float leftMotorStartPwm;
+    float rightMotorStartPwm;
     float deadband;
     float responseCurve;
 

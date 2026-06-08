@@ -22,26 +22,40 @@ void MotorDriver::begin() {
 }
 
 void MotorDriver::drive(float pwmA, float pwmB) {
-    uint16_t pwmAValue = (uint16_t)((pwmA / 100.0f) * maximumLevel);
-    uint16_t pwmBValue = (uint16_t)((pwmB / 100.0f) * maximumLevel);
-
-    pwmAValue = (uint16_t)constrainValue(pwmAValue, 0, maximumLevel);
-    pwmBValue = (uint16_t)constrainValue(pwmBValue, 0, maximumLevel);
-
     if (pwmA > 0.0f) {
-        pwm_set_gpio_level(motorPinP1, pwmAValue);
-        pwm_set_gpio_level(motorPinQ1, pwmAValue);
-
-        pwm_set_gpio_level(motorPinP2, 0);
-        pwm_set_gpio_level(motorPinQ2, 0);
+        driveWheels(pwmA, pwmA);
     } else if (pwmB > 0.0f) {
-        pwm_set_gpio_level(motorPinP1, 0);
-        pwm_set_gpio_level(motorPinQ1, 0);
-
-        pwm_set_gpio_level(motorPinP2, pwmBValue);
-        pwm_set_gpio_level(motorPinQ2, pwmBValue);
+        driveWheels(-pwmB, -pwmB);
     } else {
         stop();
+    }
+}
+
+void MotorDriver::driveWheels(float leftPwm, float rightPwm) {
+    writeOneMotor(motorPinP1, motorPinP2, leftPwm);
+    writeOneMotor(motorPinQ1, motorPinQ2, rightPwm);
+}
+
+void MotorDriver::writeOneMotor(int forwardPin, int backwardPin, float signedPwm) {
+    signedPwm = constrainValue(signedPwm, -100.0f, 100.0f);
+
+    float pwmPercent = signedPwm;
+    if (pwmPercent < 0.0f) {
+        pwmPercent = -pwmPercent;
+    }
+
+    uint16_t pwmValue = (uint16_t)((pwmPercent / 100.0f) * maximumLevel);
+    pwmValue = (uint16_t)constrainValue(pwmValue, 0, maximumLevel);
+
+    if (signedPwm > 0.0f) {
+        pwm_set_gpio_level(forwardPin, pwmValue);
+        pwm_set_gpio_level(backwardPin, 0);
+    } else if (signedPwm < 0.0f) {
+        pwm_set_gpio_level(forwardPin, 0);
+        pwm_set_gpio_level(backwardPin, pwmValue);
+    } else {
+        pwm_set_gpio_level(forwardPin, 0);
+        pwm_set_gpio_level(backwardPin, 0);
     }
 }
 

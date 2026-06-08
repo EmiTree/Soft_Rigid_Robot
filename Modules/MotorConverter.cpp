@@ -6,7 +6,8 @@
 MotorConverter::MotorConverter(float pidOutputLimit, float maxPwm, float motorStartPwm) {
     this->pidOutputLimit = pidOutputLimit;
     this->maxPwm = maxPwm;
-    this->motorStartPwm = motorStartPwm;
+    this->leftMotorStartPwm = motorStartPwm;
+    this->rightMotorStartPwm = motorStartPwm;
 
     /*
         Default extra behavior.
@@ -38,26 +39,22 @@ MotorCommand MotorConverter::convert(float pidOutput) {
     command.motorOutput = 0.0f;
     command.normalizedOutput = 0.0f;
     command.scaledOutput = 0.0f;
+    command.leftMotorOutput = 0.0f;
+    command.rightMotorOutput = 0.0f;
 
     float safePidOutputLimit = clampFloat(pidOutputLimit, 1.0f, 1000.0f);
     float safeMaxPwm = clampFloat(maxPwm, 0.0f, 100.0f);
-    float safeMotorStartPwm = clampFloat(motorStartPwm, 0.0f, safeMaxPwm);
 
-    float availablePwmRange = safeMaxPwm - safeMotorStartPwm;
+    float safeLeftMotorStartPwm = clampFloat(leftMotorStartPwm, 0.0f, safeMaxPwm);
+    float safeRightMotorStartPwm = clampFloat(rightMotorStartPwm, 0.0f, safeMaxPwm);
 
-    if (availablePwmRange <= 0.0f) {
+    float availableLeftPwmRange = safeMaxPwm - safeLeftMotorStartPwm;
+    float availableRightPwmRange = safeMaxPwm - safeRightMotorStartPwm;
+
+    if (availableLeftPwmRange <= 0.0f && availableRightPwmRange <= 0.0f) {
         return command;
     }
 
-    /*
-        Normalize PID output.
-
-        Example:
-            pidOutput = 30
-            pidOutputLimit = 60
-
-            normalized = 0.5
-    */
     float normalized = pidOutput / safePidOutputLimit;
     normalized = clampFloat(normalized, -1.0f, 1.0f);
 
@@ -75,48 +72,18 @@ MotorCommand MotorConverter::convert(float pidOutput) {
         effort = -effort;
     }
 
-    /*
-        Deadband.
-
-        If effort is tiny, the motors stay off.
-        This avoids motor twitching around the setpoint.
-
-        If deadband is disabled, effort passes through normally.
-    */
     if (deadbandEnabled) {
         float safeDeadband = clampFloat(deadband, 0.0f, 0.95f);
 
         if (effort < safeDeadband) {
-            return command; //sets the PWM signal to 0 because the effort is within the deadband
+            return command;
         }
 
-        /*
-            Re-scale after the deadband.
-
-            Example with deadband 0.1:
-                effort 0.1 becomes 0.0
-                effort 1.0 becomes 1.0
-
-            This makes the usable range smooth again.
-        */
         effort = (effort - safeDeadband) / (1.0f - safeDeadband);
     }
 
     effort = clampFloat(effort, 0.0f, 1.0f);
 
-    /*
-        Response curve.
-
-        responseCurve = 1.0 means normal linear behavior.
-        responseCurve = 1.5 or 2.0 makes small corrections gentler.
-
-        If responseCurveEnabled is false, this stays linear.
-
-
-        The response curve is possibly not needed. This can correct the PID tuning.
-        If the angle is great, the response curve will change the PID output to become extra high
-        If the angle is small, the correction will be less. 
-    */
     if (responseCurveEnabled) {
         float safeCurve = clampFloat(responseCurve, 0.1f, 5.0f);
         effort = powf(effort, safeCurve);
@@ -124,23 +91,23 @@ MotorCommand MotorConverter::convert(float pidOutput) {
 
     command.scaledOutput = effort;
 
-    /*
-        Convert the 0..1 effort into PWM.
+    float leftPwm = safeLeftMotorStartPwm + effort * availableLeftPwmRange;
+    float rightPwm = safeRightMotorStartPwm + effort * availableRightPwmRange;
 
-        motorStartPwm is only added after the deadband. So tiny PID outputs do
-        not immediately jump to motorStartPwm.
-    */
-    float pwm = safeMotorStartPwm + effort * availablePwmRange;
-    pwm = clampFloat(pwm, 0.0f, safeMaxPwm);
+    leftPwm = clampFloat(leftPwm, 0.0f, safeMaxPwm);
+    rightPwm = clampFloat(rightPwm, 0.0f, safeMaxPwm);
 
-    command.motorOutput = direction * pwm;
+    command.leftMotorOutput = direction * leftPwm;
+    command.rightMotorOutput = direction * rightPwm;
+
+    command.motorOutput = direction * ((leftPwm + rightPwm) / 2.0f);
 
     if (direction > 0.0f) {
-        command.pwmA = pwm;
+        command.pwmA = command.motorOutput;
         command.pwmB = 0.0f;
     } else {
         command.pwmA = 0.0f;
-        command.pwmB = pwm;
+        command.pwmB = -command.motorOutput;
     }
 
     return command;
@@ -153,13 +120,26 @@ void MotorConverter::setPidOutputLimit(float value) {
 void MotorConverter::setMaxPwm(float value) {
     maxPwm = clampFloat(value, 0.0f, 100.0f);
 
-    if (motorStartPwm > maxPwm) {
-        motorStartPwm = maxPwm;
+    if (leftMotorStartPwm > maxPwm) {
+        leftMotorStartPwm = maxPwm;
+    }
+
+    if (rightMotorStartPwm > maxPwm) {
+        rightMotorStartPwm = maxPwm;
     }
 }
 
 void MotorConverter::setMotorStartPwm(float value) {
-    motorStartPwm = clampFloat(value, 0.0f, maxPwm);
+    leftMotorStartPwm = clampFloat(value, 0.0f, maxPwm);
+    rightMotorStartPwm = clampFloat(value, 0.0f, maxPwm);
+}
+
+void MotorConverter::setLeftMotorStartPwm(float value) {
+    leftMotorStartPwm = clampFloat(value, 0.0f, maxPwm);
+}
+
+void MotorConverter::setRightMotorStartPwm(float value) {
+    rightMotorStartPwm = clampFloat(value, 0.0f, maxPwm);
 }
 
 void MotorConverter::setDeadband(float value) {
@@ -187,7 +167,15 @@ float MotorConverter::getMaxPwm() {
 }
 
 float MotorConverter::getMotorStartPwm() {
-    return motorStartPwm;
+    return (leftMotorStartPwm + rightMotorStartPwm) / 2.0f;
+}
+
+float MotorConverter::getLeftMotorStartPwm() {
+    return leftMotorStartPwm;
+}
+
+float MotorConverter::getRightMotorStartPwm() {
+    return rightMotorStartPwm;
 }
 
 float MotorConverter::getDeadband() {
@@ -210,7 +198,8 @@ void MotorConverter::printSettings() {
     printf("\nMotor converter settings:\n");
     printf("pidOutputLimit = %.2f\n", pidOutputLimit);
     printf("maxPwm = %.2f\n", maxPwm);
-    printf("motorStartPwm = %.2f\n", motorStartPwm);
+    printf("leftMotorStartPwm = %.2f\n", leftMotorStartPwm);
+    printf("rightMotorStartPwm = %.2f\n", rightMotorStartPwm);
     printf("deadband = %.4f\n", deadband);
     printf("deadbandEnabled = %d\n", deadbandEnabled);
     printf("responseCurve = %.4f\n", responseCurve);
