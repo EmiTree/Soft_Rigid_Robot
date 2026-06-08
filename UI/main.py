@@ -717,6 +717,44 @@ def build_control_settings_section(parent):
         ),
         width=18,
     )
+
+def nav_movement_time(direction, time): #direction is forward or backward
+    send_to_pico(f"nav {direction}")
+    send_to_pico(f"nav movementtime {time}")
+
+
+def build_real_navigation_section(parent):
+    tk.Button(
+        parent,
+        text = "Forward 1000",
+        width=10,
+        command=lambda d="forward", t="1000": nav_movement_time(d, t),
+    ).grid(row = 0, column = 0, padx = 3, pady = 3)     
+    tk.Button(
+        parent,
+        text = "backward 1000",
+        width=10,
+        command=lambda d="backward", t="1000": nav_movement_time(d, t),
+    ).grid(row = 1, column = 0, padx = 3, pady = 3) 
+
+    tk.Button(
+        parent,
+        text = "Foward 500",
+        width=10,
+        command=lambda d="forward", t="500": nav_movement_time(d, t),
+    ).grid(row = 0, column = 1, padx = 3, pady = 3) 
+    tk.Button(
+        parent,
+        text = "Backward 500",
+        width=10,
+        command=lambda d="backward", t="500": nav_movement_time(d, t),
+    ).grid(row = 1, column = 1, padx = 3, pady = 3) 
+    tk.Button(
+        parent,
+        text = "Navigation 1",
+        width=10,
+        command=lambda d="forward", t="1000": nav_movement_time(d, t),
+    ).grid(row = 0, column = 4, padx = 3, pady = 3) 
     
 def build_specific_servo_settings_section(parent):
     """Create preset buttons for specific tentacle movements.
@@ -818,16 +856,33 @@ def create_app():
     motor_frame = create_section(main_frame, "Motor Settings", row=0, column=2)
     control_frame = create_section(main_frame, "Control Settings", row=0, column=3)
     build_control_settings_section(control_frame)
-    
+    real_navigation_section = create_section(main_frame, "Navigation", row=1, column=1)
+    specific_servo_section = create_section(main_frame, "Servo settings", row=1, column=0)
+
     specific_servo_frame = tk.LabelFrame(
-        main_frame,
+        specific_servo_section,
         text="Specific Servo Settings",
         padx=10,
         pady=10,
         bg=DARK_BG,
         fg=DARK_TEXT,
     )
+    real_navigation_frame = tk.LabelFrame(
+        real_navigation_section,
+        text = "Navigation Commands",
+        padx=10,
+        pady=10,
+        bg=DARK_BG,
+        fg=DARK_TEXT,
+    )
 
+    real_navigation_frame.grid(
+        row=0,
+        column=0,
+        sticky="nsew",
+        padx=5,
+        pady=5,
+    )
     specific_servo_frame.grid(
         row=1,
         column=0,
@@ -838,6 +893,7 @@ def create_app():
     )
 
     build_specific_servo_settings_section(specific_servo_frame)
+    build_real_navigation_section(real_navigation_frame)
     build_pid_section(pid_frame)
     build_servo_section(servo_frame)
     build_motor_section(motor_frame)
@@ -845,7 +901,7 @@ def create_app():
     general_frame = tk.LabelFrame(window, text="General", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
     general_frame.pack(fill="x", padx=10, pady=5)
     build_general_section(general_frame)
-    navigation_frame = tk.LabelFrame(window, text="Navigation", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
+    navigation_frame = tk.LabelFrame(window, text="Setpoint", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
     navigation_frame.pack(fill="x", padx=10, pady=5)
     build_navigation_section(navigation_frame)
 
