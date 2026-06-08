@@ -1,18 +1,21 @@
 import tkinter as tk
 import serial
-from os.path import join
-import json 
 
-
+#ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
 
 import json 
+ 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
 picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+# Set correct com port for pico
+#serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+#serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 
-if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
@@ -202,6 +205,7 @@ def apply_dark_mode(window):
 def send_to_pico(command):
     """Send a command to the Raspberry Pi Pico."""
     print("Sending:", command)
+    #click_sound.play()
     #Checkpoint                             # Should you check if serial is available
     #                                         Add endline to command. 
     if picoIsConnected: serial.write(f"{command}\n".encode()) #        I have no clue how the command is formatted to i assume it needs to be encoded to utf-8 / ascii
@@ -412,6 +416,14 @@ def zero_all_servos(servo_labels):
         zero_continuous_servo(servo_number, speed)
         update_servo_setting_label(servo_labels[servo_number], setting)
 
+def reset_ki():
+    send_to_pico("ki 0") #Set Ki zero
+    original_ki = pid_values["Ki"]
+    send_to_pico(f"ki {original_ki}") # Immediately set it back
+    # NOTE           
+    # Ik weet niet of dit de Ki waarde goed reset misschien moet er een delay tussen of zet je het alleen nul met deze functie.
+    
+
 def lean(lean_amount): 
     global setpoint
     """Lean the robot forward by changing the setpoint. """
@@ -419,6 +431,7 @@ def lean(lean_amount):
     send_to_pico(f"setpoint {setpoint}")
 
 def stand_still():
+    global setpoint
     print("Standing still")
     setpoint = setpoint_original
     send_to_pico(f"setpoint {setpoint}")
@@ -466,6 +479,13 @@ def build_pid_section(parent):
                 plus_command=lambda s=setting, l=label, amount=step: change_pid(s, amount, l),
                 width=18,
             )
+    
+    tk.Button(
+        parent,
+        text="RESET Ki",
+        width=18,
+        command=lambda: reset_ki(),
+    ).pack(pady=1)
 
 def build_servo_section(parent):
     """Create continuous servo controls in a 2x2 grid."""

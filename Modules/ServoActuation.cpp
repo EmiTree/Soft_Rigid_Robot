@@ -418,7 +418,7 @@ bool ServoActuation::CurveLeftUndo() {
     ServoMove moves[ServoCount] = {
         {1, 0.0f, 1000},
         {2, 30.0f, 1000},
-        {3, 30.0f, 1000},
+        {3, -30.0f, 1000},
         {4, 0.0f, 1000}
     };
 
