@@ -15,7 +15,7 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 #picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 
-if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
