@@ -1,27 +1,8 @@
 import tkinter as tk
 import serial
-#from pygame import mixer
-from os.path import join
-#mixer.init()
 
 #ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
 
-
-'''def load_sound(name):
-    class NoneSound:
-        def play(self):
-            pass
-
-    if not mixer.get_init():
-        return NoneSound()
-
-    fullname = join('soundFiles', name)
-    sound = mixer.Sound(fullname)
-
-    return sound
-
-click_sound = load_sound("Click 2.wav")'''
-from os.path import join
 import json 
  
 with open("config.json", "r") as jsonfile:
