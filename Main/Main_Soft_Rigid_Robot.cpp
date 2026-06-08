@@ -20,7 +20,7 @@ MotorConverter motorConverter(100.0f, 80.0f, 20.0f); // Motor conversion setting
 MPU6050Sensor mpu(i2c0, 0x68, 4, 5); // MPU6050 sensor (i2cPort, address, sdaPin, sclPin)
 MotorDriver motorDriver(21, 22, 27, 26); // MotorDriver(pinP1, pinP2, pinQ1, pinQ2) P1 = GP21 = Linkerwiel naar voren, P2 = GP22 = Linker naar achter, Q1 = GP27 = Rechterwiel naar voren, Q2  = GP26 = rechterwiel naar achter
 ServoActuation servoActuation(18, 15, 16, 17); 
-Navigation navigation(0.5f, 15.0f); // Navigation(movementSetpointOffset, rotationExtraPwm) movementSetpointOffset is how much the setpoint changes when you go forward or backward. rotationExtraPwm is how much extra PWM is added to the motors when you rotate.
+Navigation navigation(0.5f, 30.0f); // Navigation(movementSetpointOffset, rotationExtraPwm) movementSetpointOffset is how much the setpoint changes when you go forward or backward. rotationExtraPwm is how much extra PWM is added to the motors when you rotate.
 
 
 bool pidRunning = false; // Starts with PID off for safety. Type "start" to turn on PID and "stop" to turn it off.
@@ -445,7 +445,9 @@ void processCommand() {
             } else if (strcmp(subCommand, "setpointoffset") == 0 && parts == 3) {
                 navigation.setMovementSetpointOffset(value);
                 printf("\nNavigation setpoint offset set to %.2f\n", navigation.getMovementSetpointOffset());
-
+            } else if (strcmp(subCommand, "holdoffset") == 0 && parts == 3) {
+                navigation.setMovementHoldOffset(value);
+                printf("\nNavigation hold offset set to %.2f\n", navigation.getMovementHoldOffset());
             } else if (strcmp(subCommand, "rotationextrapwm") == 0 && parts == 3) {
                 navigation.setRotationExtraPwm(value);
                 printf("\nNavigation rotation extra PWM set to %.2f\n", navigation.getRotationExtraPwm());
@@ -453,7 +455,9 @@ void processCommand() {
             } else if (strcmp(subCommand, "movementtime") == 0 && parts == 3) {
                 navigation.setMovementDurationMs((uint32_t)value);
                 printf("\nNavigation movement time set to %lu ms\n", navigation.getMovementDurationMs());
-
+            } else if (strcmp(subCommand, "returntime") == 0 && parts == 3) {
+                navigation.setMovementReturnDurationMs((uint32_t)value);
+                printf("\nNavigation return time set to %lu ms\n", navigation.getMovementReturnDurationMs());
             } else if (strcmp(subCommand, "rotationtime") == 0 && parts == 3) {
                 navigation.setRotationDurationMs((uint32_t)value);
                 printf("\nNavigation rotation time set to %lu ms\n", navigation.getRotationDurationMs());
@@ -462,10 +466,9 @@ void processCommand() {
                 navigation.stopMovement();
                 navigation.stopRotation();
                 printf("\nNavigation stopped, normal balance mode\n");
-            } else if (strcmp(subCommand, "returnsmoothing") == 0 && parts == 3) {
-                navigation.setMovementReturnSmoothingDivisor(value);
-                printf("\nNavigation return smoothing divisor set to %.2f\n", navigation.getMovementReturnSmoothingDivisor());
-
+            } else if (strcmp(subCommand, "returntime") == 0 && parts == 3) {
+                navigation.setMovementReturnDurationMs((uint32_t)value);
+                printf("\nNavigation return time set to %lu ms\n", navigation.getMovementReturnDurationMs());
             } else {
                 printf("\nUnknown navigation command: %s\n", commandBuffer);
                 printHelp();
@@ -758,10 +761,13 @@ void printHelp() {
     printf("nav balance            -> return to normal balancing\n");
     printf("nav stop               -> same as nav balance\n");
     printf("nav setpointoffset 5        -> set forward/backward lean offset\n");
+    printf("nav holdoffset 0.1          -> small offset kept after moving so it does not drive backward hard\n");
+    printf("nav returntime 800          -> set how long the setpoint takes to return to hold offset (ms)\n");
     printf("nav rotationextrapwm 15     -> set extra PWM used for rotation\n");
     printf("nav movementtime 1000      -> set how long forward/backward movement lasts (ms)\n");
     printf("nav rotationtime 1000      -> set how long rotation lasts (ms)\n");
     printf("nav returnsmoothing 2      -> divide offset during soft return to balance\n");
+    printf("nav returntime 500        -> set how long the setpoint takes to return to balance (ms)\n");
 
     printf("\nServo commands:\n");
     printf("servo movement1       -> run servo movement pattern 1\n");

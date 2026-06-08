@@ -4,8 +4,10 @@
     "ki" : 2.0,
     "kd" : 0.2,
     "isOn" : false,
-    "setpoint" : -5.5,
+    "setpoint" : -5.0,
     "maxPWM" : 80.0,
     "motorStartPWM" : 15.0,
-    "pidOutputLimit" : 60
+    "pidOutputLimit" : 60,
+    "movementTimeNavigation" : 800,
+    "rotationTimeNavigation" : 350  
 }

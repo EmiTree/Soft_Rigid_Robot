@@ -19,15 +19,17 @@ public:
     void applyRotation(float &leftMotorOutput, float &rightMotorOutput);
 
     void setMovementSetpointOffset(float offset);
-    void setMovementReturnSmoothingDivisor(float divisor);
+    void setMovementHoldOffset(float offset);
     void setRotationExtraPwm(float extraPwm);
     void setMovementDurationMs(uint32_t durationMs);
+    void setMovementReturnDurationMs(uint32_t durationMs);
     void setRotationDurationMs(uint32_t durationMs);
 
     float getMovementSetpointOffset();
-    float getMovementReturnSmoothingDivisor();
+    float getMovementHoldOffset();
     float getRotationExtraPwm();
     uint32_t getMovementDurationMs();
+    uint32_t getMovementReturnDurationMs();
     uint32_t getRotationDurationMs();
 
     bool isMoving();
@@ -39,7 +41,9 @@ private:
         MovementForward,
         MovementBackward,
         MovementReturnForward,
-        MovementReturnBackward
+        MovementReturnBackward,
+        MovementHoldForward,
+        MovementHoldBackward
     };
 
     enum RotationDirection {
@@ -49,7 +53,7 @@ private:
     };
 
     float movementSetpointOffset;
-    float movementReturnSmoothingDivisor;
+    float movementHoldOffset;
     float rotationExtraPwm;
 
     uint32_t movementDurationMs;
@@ -60,6 +64,7 @@ private:
     RotationDirection rotationDirection;
 
     absolute_time_t movementEndTime;
+    absolute_time_t movementReturnStartTime;
     absolute_time_t rotationEndTime;
 
     float clampPwm(float value);
