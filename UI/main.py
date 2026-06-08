@@ -1,8 +1,9 @@
 import tkinter as tk
 import serial
-
+import csv
+import time
 #ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
-
+import threading
 import json 
  
 with open("config.json", "r") as jsonfile:
@@ -12,10 +13,10 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-#picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+#picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 
+if picoIsConnected: serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 
-if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================
@@ -45,6 +46,9 @@ DARK_BUTTON_ACTIVE = "#505050"
 # =============================================================================
 # CURRENT ROBOT VALUES
 # =============================================================================
+csv_data = [] # This is for recording data
+
+
 setpoint = configValues['setpoint']
 setpoint_original = setpoint
 
@@ -178,6 +182,12 @@ def boot():
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+def process_csv_data():
+    print(csv_data)
+    with open("csv_data.csv", "w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        for angle in csv_data:
+            writer.writerow([angle])
 
 def style_widget(widget):
     """Apply dark mode colors to one widget."""
@@ -289,8 +299,6 @@ def set_response_curve(enabled):
         send_to_pico("curve on")
     else:
         send_to_pico("curve off")
-
-
 
 def send_specific_servo_command(direction, action):
     """Send a preset tentacle/servo movement command.
@@ -626,6 +634,13 @@ def build_general_section(parent):
         command=lambda: save_original_setpoint(),
     ).pack(side="left", padx=5)
 
+    tk.Button(
+        parent,
+        text = "Show Angle Data",
+        width = 15,
+        command= lambda: process_csv_data()
+    ).pack(side="left", padx=5)
+
 def build_navigation_section(parent):
     """Create the navigation command buttons."""
     for command_info in NAVIGATION_COMMANDS:
@@ -925,11 +940,34 @@ def create_app():
 
     apply_dark_mode(window)
     return window
+
+    
+
+def record_data():
+    global csv_data, recording
+    recording = True
+    while True:
+        data = serial.readline().decode('utf-8').strip()
+        #print("data: ", data)
+
+        
+        if data.startswith("A"):
+            angle = data[2:]
+            if recording:
+                csv_data.append(angle)
+
+
+
+
+record_data_thread = threading.Thread(target=record_data, daemon=True)
 # =============================================================================
 # START THE PROGRAM
 # =============================================================================
 
 if __name__ == "__main__":
     boot()
+    
     app = create_app()
+    if picoIsConnected: record_data_thread.start()
     app.mainloop()
+

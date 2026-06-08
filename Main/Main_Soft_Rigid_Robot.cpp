@@ -129,6 +129,7 @@ int main() {
             float angle = mpu.getAngle();
             float gx = mpu.getGyroX();
             if (pidRunning) {
+                printf("A:%.2f\n", angle);
                 float activeSetpoint = navigation.getActiveSetpoint(setpoint);
                 pidOutput = pid.update(activeSetpoint, angle, gx, dt, pValue, iValue, dValue);
 
