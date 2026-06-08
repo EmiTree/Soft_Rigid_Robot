@@ -184,6 +184,11 @@ def boot():
 # =============================================================================
 def process_csv_data():
     print(csv_data)
+    with open("csv_data.csv", "w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        for angle in csv_data:
+            writer.writerow([angle])
+
 def style_widget(widget):
     """Apply dark mode colors to one widget."""
     widget_type = widget.winfo_class()
