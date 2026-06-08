@@ -9,10 +9,10 @@ import json
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 
 
-if picoIsConnected: serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 
 # =============================================================================

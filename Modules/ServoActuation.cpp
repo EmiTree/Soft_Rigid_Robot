@@ -284,10 +284,10 @@ bool ServoActuation::servoNumberToIndex(int servoNumber, int &servoIndex) const 
 // start making movements here. Example movement1 is added to the header file. You can call it from main to test it, or make your own movements.
 bool ServoActuation::movement1() {
     ServoMove moves[ServoCount] = {
-        {1, 80.0f, 3000},  // Servo 1: speed +80 for 3 seconds
-        {2, 80.0f, 3000},  // Servo 2: speed +80 for 3 seconds
-        {3, 0.0f, 1000},  // Servo 3: speed 0 for 1 second
-        {4, 0.0f, 1000}   // Servo 4: speed 0 for 1 second
+        {1, 30.0f, 1000},  // Servo 1: speed +80 for 3 seconds
+        {2, -30.0f, 1000},  // Servo 2: speed +80 for 3 seconds
+        {3, 30.0f, 1000},  // Servo 3: speed 0 for 1 second
+        {4, -30.0f, 1000}   // Servo 4: speed 0 for 1 second
     };
 
     return runMoves(moves, ServoCount);
@@ -317,10 +317,10 @@ bool ServoActuation::CurveBackwards() {
 
 bool ServoActuation::CurveRight() {
     ServoMove moves[ServoCount] = {
-        {1, 80.0f, 3000},
-        {2, 0.0f, 3000},
-        {3, 0.0f, 3000},
-        {4, -80.0f, 3000}
+        {1, 80.0f, 7000},
+        {2, 0.0f, 7000},
+        {3, 0.0f, 7000},
+        {4, -80.0f, 7000}
     };
 
     return runMoves(moves, ServoCount);
@@ -329,9 +329,9 @@ bool ServoActuation::CurveRight() {
 bool ServoActuation::CurveLeft() {
     ServoMove moves[ServoCount] = {
         {1, 0.0f, 3000},
-        {2, 80.0f, 3000},
-        {3, 0.0f, 3000},
-        {4, 80.0f, 3000}
+        {2, -80.0f, 3000},
+        {3, 80.0f, 3000},
+        {4, 0.0f, 3000}
     };
 
     return runMoves(moves, ServoCount);
@@ -405,10 +405,10 @@ bool ServoActuation::CurveBackwardsUndo() {
 
 bool ServoActuation::CurveRightUndo() {
     ServoMove moves[ServoCount] = {
-        {1, -30.0f, 1000},
-        {2, 0.0f, 1000},
+        {1, -30.0f, 2000},
+        {2, 0.0f, 2000},
         {3, 0.0f, 2000},
-        {4, -30.0f, 1000}
+        {4, 30.0f, 2000}
     };
 
     return runMoves(moves, ServoCount);
@@ -424,3 +424,4 @@ bool ServoActuation::CurveLeftUndo() {
 
     return runMoves(moves, ServoCount);
 }
+
