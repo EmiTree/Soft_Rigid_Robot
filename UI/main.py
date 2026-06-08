@@ -6,7 +6,7 @@ import time
 import threading
 import json 
 
-fileName = "csv_data.csv"
+FILENAME = "csv_data.csv"
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
@@ -185,7 +185,7 @@ def boot():
 # =============================================================================
 def process_csv_data():
     print(csv_data)
-    with open(fileName, "w", newline="") as csv_file:
+    with open(FILENAME, "w", newline="") as csv_file:
         writer = csv.writer(csv_file)
         for angle in csv_data:
             writer.writerow([angle])
