@@ -1,39 +1,18 @@
 import tkinter as tk
 import serial
-#from pygame import mixer
-from os.path import join
-#mixer.init()
 
 #ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
 
-
-'''def load_sound(name):
-    class NoneSound:
-        def play(self):
-            pass
-
-    if not mixer.get_init():
-        return NoneSound()
-
-    fullname = join('soundFiles', name)
-    sound = mixer.Sound(fullname)
-
-    return sound
-
-click_sound = load_sound("Click 2.wav")'''
-from os.path import join
 import json 
-
-
-
-import json 
+ 
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
+picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 
 if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
@@ -437,6 +416,14 @@ def zero_all_servos(servo_labels):
         zero_continuous_servo(servo_number, speed)
         update_servo_setting_label(servo_labels[servo_number], setting)
 
+def reset_ki():
+    send_to_pico("ki 0") #Set Ki zero
+    original_ki = pid_values["Ki"]
+    send_to_pico(f"ki {original_ki}") # Immediately set it back
+    # NOTE           
+    # Ik weet niet of dit de Ki waarde goed reset misschien moet er een delay tussen of zet je het alleen nul met deze functie.
+    
+
 def lean(lean_amount): 
     global setpoint
     """Lean the robot forward by changing the setpoint. """
@@ -444,6 +431,7 @@ def lean(lean_amount):
     send_to_pico(f"setpoint {setpoint}")
 
 def stand_still():
+    global setpoint
     print("Standing still")
     setpoint = setpoint_original
     send_to_pico(f"setpoint {setpoint}")
@@ -491,6 +479,13 @@ def build_pid_section(parent):
                 plus_command=lambda s=setting, l=label, amount=step: change_pid(s, amount, l),
                 width=18,
             )
+    
+    tk.Button(
+        parent,
+        text="RESET Ki",
+        width=18,
+        command=lambda: reset_ki(),
+    ).pack(pady=1)
 
 def build_servo_section(parent):
     """Create continuous servo controls in a 2x2 grid."""

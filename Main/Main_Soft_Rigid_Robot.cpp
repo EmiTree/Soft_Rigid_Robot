@@ -128,10 +128,14 @@ int main() {
 
             float angle = mpu.getAngle();
             float gx = mpu.getGyroX();
-
             if (pidRunning) {
+<<<<<<< HEAD
                 float activeSetpoint = navigation.getActiveSetpoint(setpoint);
                 pidOutput = pid.update(activeSetpoint, angle, gx, dt, pValue, iValue, dValue);
+=======
+                pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
+                printf("A%0.2f\n", angle);
+>>>>>>> 3130badcb8bb454ece2a4bc9705e5723a79e35b0
 
                 MotorCommand motorCommand = motorConverter.convert(pidOutput);
                 motorOutput = motorCommand.motorOutput;
