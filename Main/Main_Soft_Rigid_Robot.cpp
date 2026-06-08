@@ -129,13 +129,8 @@ int main() {
             float angle = mpu.getAngle();
             float gx = mpu.getGyroX();
             if (pidRunning) {
-<<<<<<< HEAD
                 float activeSetpoint = navigation.getActiveSetpoint(setpoint);
                 pidOutput = pid.update(activeSetpoint, angle, gx, dt, pValue, iValue, dValue);
-=======
-                pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
-                printf("A%0.2f\n", angle);
->>>>>>> 3130badcb8bb454ece2a4bc9705e5723a79e35b0
 
                 MotorCommand motorCommand = motorConverter.convert(pidOutput);
                 motorOutput = motorCommand.motorOutput;
@@ -467,6 +462,9 @@ void processCommand() {
                 navigation.stopMovement();
                 navigation.stopRotation();
                 printf("\nNavigation stopped, normal balance mode\n");
+            } else if (strcmp(subCommand, "returnsmoothing") == 0 && parts == 3) {
+                navigation.setMovementReturnSmoothingDivisor(value);
+                printf("\nNavigation return smoothing divisor set to %.2f\n", navigation.getMovementReturnSmoothingDivisor());
 
             } else {
                 printf("\nUnknown navigation command: %s\n", commandBuffer);
@@ -763,6 +761,7 @@ void printHelp() {
     printf("nav rotationextrapwm 15     -> set extra PWM used for rotation\n");
     printf("nav movementtime 1000      -> set how long forward/backward movement lasts (ms)\n");
     printf("nav rotationtime 1000      -> set how long rotation lasts (ms)\n");
+    printf("nav returnsmoothing 2      -> divide offset during soft return to balance\n");
 
     printf("\nServo commands:\n");
     printf("servo movement1       -> run servo movement pattern 1\n");

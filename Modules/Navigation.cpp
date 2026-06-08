@@ -2,9 +2,11 @@
 
 Navigation::Navigation(float movementSetpointOffset, float rotationExtraPwm) {
     this->movementSetpointOffset = movementSetpointOffset;
+    this->movementReturnSmoothingDivisor = 2.0f;
     this->rotationExtraPwm = rotationExtraPwm;
 
     movementDurationMs = 500;
+    movementReturnDurationMs = 250;
     rotationDurationMs = 1000;
 
     movementDirection = MovementNone;
@@ -25,6 +27,14 @@ float Navigation::getActiveSetpoint(float balanceSetpoint) {
 
     if (movementDirection == MovementBackward) {
         return balanceSetpoint + movementSetpointOffset;
+    }
+
+    if (movementDirection == MovementReturnForward) {
+        return balanceSetpoint - (movementSetpointOffset / movementReturnSmoothingDivisor);
+    }
+
+    if (movementDirection == MovementReturnBackward) {
+        return balanceSetpoint + (movementSetpointOffset / movementReturnSmoothingDivisor);
     }
 
     return balanceSetpoint;
@@ -83,6 +93,14 @@ void Navigation::setMovementSetpointOffset(float offset) {
     movementSetpointOffset = offset;
 }
 
+void Navigation::setMovementReturnSmoothingDivisor(float divisor) {
+    if (divisor < 1.0f) {
+        divisor = 1.0f;
+    }
+
+    movementReturnSmoothingDivisor = divisor;
+}
+
 void Navigation::setRotationExtraPwm(float extraPwm) {
     if (extraPwm < 0.0f) {
         extraPwm = -extraPwm;
@@ -107,6 +125,10 @@ float Navigation::getMovementSetpointOffset() {
     return movementSetpointOffset;
 }
 
+float Navigation::getMovementReturnSmoothingDivisor() {
+    return movementReturnSmoothingDivisor;
+}
+
 float Navigation::getRotationExtraPwm() {
     return rotationExtraPwm;
 }
@@ -127,6 +149,18 @@ bool Navigation::isMoving() {
     absolute_time_t now = get_absolute_time();
 
     if (absolute_time_diff_us(now, movementEndTime) <= 0) {
+        if (movementDirection == MovementForward) {
+            movementDirection = MovementReturnForward;
+            movementEndTime = make_timeout_time_ms(movementReturnDurationMs);
+            return true;
+        }
+
+        if (movementDirection == MovementBackward) {
+            movementDirection = MovementReturnBackward;
+            movementEndTime = make_timeout_time_ms(movementReturnDurationMs);
+            return true;
+        }
+
         movementDirection = MovementNone;
         return false;
     }
