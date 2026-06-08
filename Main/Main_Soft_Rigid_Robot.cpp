@@ -124,9 +124,9 @@ int main() {
 
             float angle = mpu.getAngle();
             float gx = mpu.getGyroX();
-
             if (pidRunning) {
                 pidOutput = pid.update(setpoint, angle, gx, dt, pValue, iValue, dValue);
+                printf("A%0.2f\n", angle);
 
                 MotorCommand motorCommand = motorConverter.convert(pidOutput);
                 motorOutput = motorCommand.motorOutput;

@@ -8,6 +8,7 @@ import json
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
+picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
