@@ -6,12 +6,12 @@ import time
 import threading
 import json 
 
-FILENAME = "csv_data.csv"
+#FILENAME = "csv_data.csv"
 #FILENAME = "csv_UprightTense09.csv"
 #FILENAME = "csv_UprightFloppy09.csv"
-#FILENAME = "csv_CurveLeft09.csv
-#FILENAME = "csv_CurveForward09.csv""
-#FILENAME = "csv_CurvingLeft09.csv"
+#FILENAME = "csv_CurveLeft09.csv"
+#FILENAME = "csv_CurveForward09.csv"
+FILENAME = "csv_CurvingLeft09.csv"
 #FILENAME = "csv_CurvingForward09.csv"
 #FILENAME = "csv_DisturbanceUpright09.csv"
 #FILENAME = "csv_DisturbanceFloppy09.csv"
@@ -28,7 +28,7 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+#picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
@@ -104,7 +104,7 @@ control_values = {
     "response_curve_value": 2,
 }
 
-SPECIFIC_SERVO_DIRECTIONS = ["Forward", "Backward", "Left", "Right"]
+SPECIFIC_SERVO_DIRECTIONS = ["Forwards", "Backwards", "Left", "Right"]
 
 SPECIFIC_SERVO_ACTIONS = [
     "Curve",
@@ -209,7 +209,9 @@ def record_data_button_function():
     start_time = time.time()
     csv_data = []
     
-    
+def reset_data_button_function():
+    global csv_data
+    csv_data = []
 
 def style_widget(widget):
     """Apply dark mode colors to one widget."""
@@ -673,6 +675,14 @@ def build_general_section(parent):
         width = 15,
         command = lambda: record_data_button_function()
     ).pack(side="left", padx = 5)
+
+    tk.Button(
+        parent,
+        text = "Reset Data",
+        width = 15,
+        command = lambda: reset_data_button_function()
+    ).pack(side="left", padx = 5)
+    
 
 def build_navigation_section(parent):
     """Create the navigation command buttons."""

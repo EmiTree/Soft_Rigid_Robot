@@ -3,10 +3,10 @@ import numpy as np
 import csv
 import pandas as pd
 
-dfUtense = pd.read_csv("Testvaluestense2.csv")
-dfUflop = pd.read_csv("Testvaluesflop5.csv")
-dfUbendL = pd.read_csv("Testvaluesflop4.csv")
-dfUbendFr = pd.read_csv("Testvaluesflop3.csv")
+dfUtense = pd.read_csv("csv_UprightTense09.csv")
+dfUflop = pd.read_csv("csv_UprightFloppy09.csv")
+dfUbendL = pd.read_csv("csv_CurveLeft09.csv")
+dfUbendFr = pd.read_csv("csv_CurveForward09.csv")
 
 dfBendingL = pd.read_csv("Testvaluestense2.csv")
 dfBendingFr = pd.read_csv("Testvaluestense2.csv")
@@ -18,20 +18,20 @@ dfDistL = pd.read_csv("Testvaluestense2.csv")
 dfDistFo = pd.read_csv("Testvaluestense2.csv")
 
 #print(df.to_numpy())
+print(type(dfUtense))
+dataUtense = dfUtense.iloc[:, 0] + 4.6
+dataUflop = dfUflop.iloc[:, 0] + 4.3
+dataUbendL = dfUbendL.iloc[:, 0] + 4.5
+dataUbendFr = dfUbendFr.iloc[:, 0] + 10.1
 
-dataUtense = dfUtense.iloc[:, 1] + 5.5
-dataUflop = dfUflop.iloc[:, 1] + 5.5
-dataUbendL = dfUbendL.iloc[:, 1] + 4.9
-dataUbendFr = dfUbendFr.iloc[:, 1] + 4.9
+dataBendingL = dfBendingL.iloc[:, 0] + 4.9
+dataBendingFr = dfBendingFr.iloc[0] + 4.9
 
-dataBendingL = dfBendingL.iloc[:, 1] + 4.9
-dataBendingFr = dfBendingFr.iloc[:, 1] + 4.9
-
-dataNav = dfBendingL.iloc[:, 1] + 4.9
-dataDistU = dfBendingFr.iloc[:, 1] + 4.9
-dataDistFl = dfBendingFr.iloc[:, 1] + 4.9
-dataDistL = dfBendingFr.iloc[:, 1] + 4.9
-dataDistFo = dfBendingFr.iloc[:, 1] + 4.9
+dataNav = dfBendingL.iloc[0] + 4.9
+dataDistU = dfBendingFr.iloc[0] + 4.9
+dataDistFl = dfBendingFr.iloc[0] + 4.9
+dataDistL = dfBendingFr.iloc[0] + 4.9
+dataDistFo = dfBendingFr.iloc[0] + 4.9
 
 
 upright = [dataUtense, dataUflop, dataUbendL, dataUbendFr]
@@ -40,7 +40,7 @@ colors = ["skyblue", "lightcyan", "lightcoral", "lightpink"]
 fig, ax = plt.subplots(1)
 output = plt.boxplot(upright, showmeans = True, labels=labels, whis = 1.5, sym = "*", showfliers = False, patch_artist=True)
 ax.set_title("Leaning angle of upright soft arm positions")
-plt.ylim(-2.5,2.5)
+plt.ylim(-1.5,1.5)
 #chat: 
 for i, (label, data) in enumerate(zip(labels, upright)):
     mean = np.mean(data)
