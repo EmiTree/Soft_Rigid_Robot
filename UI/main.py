@@ -32,6 +32,7 @@ picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
+recording = False
 
 
 # =============================================================================
@@ -198,11 +199,17 @@ def boot():
 # HELPER FUNCTIONS
 # =============================================================================
 def process_csv_data():
-    print(csv_data)
     with open(FILENAME, "w", newline="") as csv_file:
         writer = csv.writer(csv_file)
         for angle in csv_data:
             writer.writerow([angle])
+
+def record_data_button_function():
+    global start_time
+    start_time = time.time()
+    csv_data = []
+    
+    
 
 def style_widget(widget):
     """Apply dark mode colors to one widget."""
@@ -660,6 +667,13 @@ def build_general_section(parent):
         command= lambda: process_csv_data()
     ).pack(side="left", padx=5)
 
+    tk.Button(
+        parent,
+        text = "Record Data",
+        width = 15,
+        command = lambda: record_data_button_function()
+    ).pack(side="left", padx = 5)
+
 def build_navigation_section(parent):
     """Create the navigation command buttons."""
     for command_info in NAVIGATION_COMMANDS:
@@ -949,7 +963,7 @@ def create_app():
     build_servo_section(servo_frame)
     build_motor_section(motor_frame)
 
-    general_frame = tk.LabelFrame(window, text="General", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
+    general_frame = tk.LabelFrame(window, text=f"General len(csv_data){ len(csv_data)}  Recording {recording} time {round(time.time(), 2)}", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
     general_frame.pack(fill="x", padx=10, pady=5)
     build_general_section(general_frame)
     navigation_frame = tk.LabelFrame(window, text="Setpoint", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
@@ -971,16 +985,20 @@ def create_app():
 
 def record_data():
     global csv_data, recording
-    recording = True
     while True:
         data = serial.readline().decode('utf-8').strip()
         #print("data: ", data)
+        print(f"len(csv_data) {len(csv_data)}  Recording {recording} time {round(time.time() - start_time, 2)}")
 
-        
         if data.startswith("A"):
             angle = data[2:]
-            if recording:
+           
+            if time.time() - start_time < 10:
+                recording = True
                 csv_data.append(angle)
+            else:
+                recording = False
+
 
 
 
@@ -991,8 +1009,8 @@ record_data_thread = threading.Thread(target=record_data, daemon=True)
 # =============================================================================
 
 if __name__ == "__main__":
+    start_time = time.time()
     boot()
-    
     app = create_app()
     if picoIsConnected: record_data_thread.start()
     app.mainloop()
