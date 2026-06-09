@@ -12,7 +12,10 @@ dfBendingL = pd.read_csv("Testvaluestense2.csv")
 dfBendingFr = pd.read_csv("Testvaluestense2.csv")
 
 dfNav = pd.read_csv("Testvaluestense2.csv")
-dfDist = pd.read_csv("Testvaluestense2.csv")
+dfDistU = pd.read_csv("Testvaluestense2.csv")
+dfDistFl= pd.read_csv("Testvaluestense2.csv")
+dfDistL = pd.read_csv("Testvaluestense2.csv")
+dfDistFo = pd.read_csv("Testvaluestense2.csv")
 
 #print(df.to_numpy())
 
@@ -25,7 +28,10 @@ dataBendingL = dfBendingL.iloc[:, 1] + 4.9
 dataBendingFr = dfBendingFr.iloc[:, 1] + 4.9
 
 dataNav = dfBendingL.iloc[:, 1] + 4.9
-dataDist = dfBendingFr.iloc[:, 1] + 4.9
+dataDistU = dfBendingFr.iloc[:, 1] + 4.9
+dataDistFl = dfBendingFr.iloc[:, 1] + 4.9
+dataDistL = dfBendingFr.iloc[:, 1] + 4.9
+dataDistFo = dfBendingFr.iloc[:, 1] + 4.9
 
 
 upright = [dataUtense, dataUflop, dataUbendL, dataUbendFr]
@@ -104,9 +110,9 @@ for patch, color in zip(output['boxes'], colors):
 plt.show()
 print(data)
 
-disturbances = [dataNav, dataDist]
-labels = ["Navigation", "Disturbance"]
-colors = ["lightblue", "lightcoral"]
+disturbances = [dataNav, dataDistU, dataDistFl, dataDistL, dataDistFo]
+labels = ["Navigation", "Disturbance Upright", "Disturbance Floppy", "Disturbance Left", "Disturbance Forward"]
+colors = ["lightblue", "lightcoral", "lightgreen", "lightyellow", "lightpink"]
 fig, ax = plt.subplots(1)
 output = plt.boxplot(disturbances, showmeans = True, labels=labels, whis = 1.5, sym = "*", showfliers = False, patch_artist=True)
 ax.set_title("Leaning angle of disturbances")

@@ -7,6 +7,20 @@ import threading
 import json 
 
 FILENAME = "csv_data.csv"
+#FILENAME = "csv_UprightTense09.csv"
+#FILENAME = "csv_UprightFloppy09.csv"
+#FILENAME = "csv_CurveLeft09.csv
+#FILENAME = "csv_CurveForward09.csv""
+#FILENAME = "csv_CurvingLeft09.csv"
+#FILENAME = "csv_CurvingForward09.csv"
+#FILENAME = "csv_DisturbanceUpright09.csv"
+#FILENAME = "csv_DisturbanceFloppy09.csv"
+#FILENAME = "csv_DisturbanceCurveLeft09.csv"
+#FILENAME = "csv_DisturbanceCurveForward09.csv"
+#FILENAME = "csv_Nav09.csv"
+
+
+
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
