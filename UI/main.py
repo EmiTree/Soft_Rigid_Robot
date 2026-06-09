@@ -5,7 +5,8 @@ import time
 #ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
 import threading
 import json 
- 
+
+FILENAME = "csv_data.csv"
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
@@ -184,7 +185,7 @@ def boot():
 # =============================================================================
 def process_csv_data():
     print(csv_data)
-    with open("csv_data.csv", "w", newline="") as csv_file:
+    with open(FILENAME, "w", newline="") as csv_file:
         writer = csv.writer(csv_file)
         for angle in csv_data:
             writer.writerow([angle])
@@ -299,7 +300,7 @@ def set_response_curve(enabled):
         send_to_pico("curve on")
     else:
         send_to_pico("curve off")
-
+'''
 def send_specific_servo_command(direction, action):
     """Send a preset tentacle/servo movement command.
 
@@ -310,10 +311,10 @@ def send_specific_servo_command(direction, action):
 
     Your Pico code can read these commands and decide how each servo should move.
     """
-    send_to_pico(f"specific {direction} {action}")
-    
+    send_to_pico(f"servo {direction} {action}")
+    '''
 def send_specific_servo_command(direction, action):
-    send_to_pico(f"specific {direction} {action}")
+    send_to_pico(f"servo {direction} {action}")
 
 # =============================================================================
 # VALUE CHANGE FUNCTIONS
