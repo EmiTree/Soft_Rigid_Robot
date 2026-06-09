@@ -5,7 +5,22 @@ import time
 #ben je dom: resetknop voor Ki, functie maken om vooruit te gaan (eerst setpoint vooruit, dan heftig achteruit en dan stand still), en ik wil servo knoppies :))
 import threading
 import json 
- 
+
+FILENAME = "csv_data.csv"
+#FILENAME = "csv_UprightTense09.csv"
+#FILENAME = "csv_UprightFloppy09.csv"
+#FILENAME = "csv_CurveLeft09.csv
+#FILENAME = "csv_CurveForward09.csv""
+#FILENAME = "csv_CurvingLeft09.csv"
+#FILENAME = "csv_CurvingForward09.csv"
+#FILENAME = "csv_DisturbanceUpright09.csv"
+#FILENAME = "csv_DisturbanceFloppy09.csv"
+#FILENAME = "csv_DisturbanceCurveLeft09.csv"
+#FILENAME = "csv_DisturbanceCurveForward09.csv"
+#FILENAME = "csv_Nav09.csv"
+
+
+
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
@@ -13,10 +28,12 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-#picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
+if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
+recording = False
 
 
 # =============================================================================
@@ -88,13 +105,13 @@ control_values = {
     "response_curve_value": 2,
 }
 
-SPECIFIC_SERVO_DIRECTIONS = ["forward", "backward", "left", "right"]
+SPECIFIC_SERVO_DIRECTIONS = ["Forward", "Backward", "Left", "Right"]
 
 SPECIFIC_SERVO_ACTIONS = [
-    "curve",
-    "lean",
-    "tense",
-    "floppy",
+    "Curve",
+    "Lean",
+    "Tense",
+
 ]
 
 
@@ -183,7 +200,18 @@ def boot():
 # HELPER FUNCTIONS
 # =============================================================================
 def process_csv_data():
-    print(csv_data)
+    with open(FILENAME, "w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        for angle in csv_data:
+            writer.writerow([angle])
+
+def record_data_button_function():
+    global start_time
+    start_time = time.time()
+    csv_data = []
+    
+    
+
 def style_widget(widget):
     """Apply dark mode colors to one widget."""
     widget_type = widget.winfo_class()
@@ -294,7 +322,7 @@ def set_response_curve(enabled):
         send_to_pico("curve on")
     else:
         send_to_pico("curve off")
-
+'''
 def send_specific_servo_command(direction, action):
     """Send a preset tentacle/servo movement command.
 
@@ -305,10 +333,14 @@ def send_specific_servo_command(direction, action):
 
     Your Pico code can read these commands and decide how each servo should move.
     """
-    send_to_pico(f"specific {direction} {action}")
-    
+    send_to_pico(f"servo {direction} {action}")
+    '''
 def send_specific_servo_command(direction, action):
-    send_to_pico(f"specific {direction} {action}")
+    send_to_pico(f"servo {action}{direction}")
+
+def send_specific_servo_command_undo(direction, action):
+    send_to_pico(f"servo {action}{direction}Undo")
+
 
 # =============================================================================
 # VALUE CHANGE FUNCTIONS
@@ -636,6 +668,13 @@ def build_general_section(parent):
         command= lambda: process_csv_data()
     ).pack(side="left", padx=5)
 
+    tk.Button(
+        parent,
+        text = "Record Data",
+        width = 15,
+        command = lambda: record_data_button_function()
+    ).pack(side="left", padx = 5)
+
 def build_navigation_section(parent):
     """Create the navigation command buttons."""
     for command_info in NAVIGATION_COMMANDS:
@@ -798,7 +837,14 @@ def build_specific_servo_settings_section(parent):
                 width=10,
                 command=lambda d=direction, a=action: send_specific_servo_command(d, a),
             ).grid(row=row + 1, column=column + 1, padx=3, pady=3)
-            
+
+        tk.Button(
+            parent,
+            text="Undo",
+            width=10,
+            command=lambda d=direction, a="Curve": send_specific_servo_command_undo(d, a),
+        ).grid(row=row + 1, column=len(SPECIFIC_SERVO_ACTIONS) + 1, padx=3, pady=3 
+        )
 # =============================================================================
 # APP SETUP
 # =============================================================================
@@ -918,7 +964,7 @@ def create_app():
     build_servo_section(servo_frame)
     build_motor_section(motor_frame)
 
-    general_frame = tk.LabelFrame(window, text="General", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
+    general_frame = tk.LabelFrame(window, text=f"General len(csv_data){ len(csv_data)}  Recording {recording} time {round(time.time(), 2)}", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
     general_frame.pack(fill="x", padx=10, pady=5)
     build_general_section(general_frame)
     navigation_frame = tk.LabelFrame(window, text="Setpoint", padx=10, pady=10, bg=DARK_BG, fg=DARK_TEXT)
@@ -940,16 +986,20 @@ def create_app():
 
 def record_data():
     global csv_data, recording
-    recording = True
     while True:
         data = serial.readline().decode('utf-8').strip()
         #print("data: ", data)
+        print(f"len(csv_data) {len(csv_data)}  Recording {recording} time {round(time.time() - start_time, 2)}")
 
-        
         if data.startswith("A"):
             angle = data[2:]
-            if recording:
+           
+            if time.time() - start_time < 10:
+                recording = True
                 csv_data.append(angle)
+            else:
+                recording = False
+
 
 
 
@@ -960,8 +1010,8 @@ record_data_thread = threading.Thread(target=record_data, daemon=True)
 # =============================================================================
 
 if __name__ == "__main__":
+    start_time = time.time()
     boot()
-    
     app = create_app()
     if picoIsConnected: record_data_thread.start()
     app.mainloop()
