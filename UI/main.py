@@ -300,7 +300,7 @@ def set_response_curve(enabled):
         send_to_pico("curve on")
     else:
         send_to_pico("curve off")
-
+'''
 def send_specific_servo_command(direction, action):
     """Send a preset tentacle/servo movement command.
 
@@ -311,10 +311,10 @@ def send_specific_servo_command(direction, action):
 
     Your Pico code can read these commands and decide how each servo should move.
     """
-    send_to_pico(f"specific {direction} {action}")
-    
+    send_to_pico(f"servo {direction} {action}")
+    '''
 def send_specific_servo_command(direction, action):
-    send_to_pico(f"specific {direction} {action}")
+    send_to_pico(f"servo {direction} {action}")
 
 # =============================================================================
 # VALUE CHANGE FUNCTIONS
