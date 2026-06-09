@@ -28,10 +28,10 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+#picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
-if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
+#if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 recording = False
 
@@ -105,7 +105,7 @@ control_values = {
     "response_curve_value": 2,
 }
 
-SPECIFIC_SERVO_DIRECTIONS = ["Forward", "Backward", "Left", "Right"]
+SPECIFIC_SERVO_DIRECTIONS = ["Forwards", "Backwards", "Left", "Right"]
 
 SPECIFIC_SERVO_ACTIONS = [
     "Curve",
@@ -185,6 +185,9 @@ BALANCING_COMMANDS = [
     {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
     {"button_text": "Stand Still", "command": "setpoint balancing"}
 ]
+
+
+
 def boot():
     print("         Starting...         ")
     send_to_pico(f"kp {pid_values['Kp']}")
