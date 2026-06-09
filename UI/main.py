@@ -14,7 +14,7 @@ picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
-#picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
@@ -89,13 +89,13 @@ control_values = {
     "response_curve_value": 2,
 }
 
-SPECIFIC_SERVO_DIRECTIONS = ["forward", "backward", "left", "right"]
+SPECIFIC_SERVO_DIRECTIONS = ["Forward", "Backward", "Left", "Right"]
 
 SPECIFIC_SERVO_ACTIONS = [
-    "curve",
-    "lean",
-    "tense",
-    "floppy",
+    "Curve",
+    "Lean",
+    "Tense",
+
 ]
 
 
@@ -314,7 +314,11 @@ def send_specific_servo_command(direction, action):
     send_to_pico(f"servo {direction} {action}")
     '''
 def send_specific_servo_command(direction, action):
-    send_to_pico(f"servo {direction} {action}")
+    send_to_pico(f"servo {action}{direction}")
+
+def send_specific_servo_command_undo(direction, action):
+    send_to_pico(f"servo {action}{direction}Undo")
+
 
 # =============================================================================
 # VALUE CHANGE FUNCTIONS
@@ -804,7 +808,14 @@ def build_specific_servo_settings_section(parent):
                 width=10,
                 command=lambda d=direction, a=action: send_specific_servo_command(d, a),
             ).grid(row=row + 1, column=column + 1, padx=3, pady=3)
-            
+
+        tk.Button(
+            parent,
+            text="Undo",
+            width=10,
+            command=lambda d=direction, a="Curve": send_specific_servo_command_undo(d, a),
+        ).grid(row=row + 1, column=len(SPECIFIC_SERVO_ACTIONS) + 1, padx=3, pady=3 
+        )
 # =============================================================================
 # APP SETUP
 # =============================================================================
