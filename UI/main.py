@@ -20,11 +20,49 @@ FILENAME = "csv_CurvingLeft09.csv"
 #FILENAME = "csv_Nav09.csv"
 
 
+programmed_movement = {
+    "curve_direction": "CurveForwards",
+    "first_curve_setpoint": -5,
+    "first_curve_delay": 5,
+    "second_curve_setpoint": 5,
+    "second_curve_delay": 5,
+    "third_curve_setpoint": 5,
+    "third_curve_delay": 5
+}
 
+def programmed_movement():
+    #movement_start_time = time.time()
+    send_to_pico(f"setpoint {programmed_movement['first_curve_setpoint']}")
+    send_to_pico(f"servo {programmed_movement['curve_direction']}")
+
+    time.sleep(programmed_movement['first_curve_delay'])
+
+    send_to_pico(f"setpoint {programmed_movement['second_curve_setpoint']}")
+    send_to_pico(f"servo {programmed_movement['curve_direction']}")
+
+    time.sleep(programmed_movement['second_curve_delay'])
+
+    send_to_pico(f"setpoint {programmed_movement['third_curve_setpoint']}")
+    send_to_pico(f"servo {programmed_movement['curve_direction']}Undo")
+
+    time.sleep(programmed_movement['third_curve_delay'])
+
+    send_to_pico(f"servo {programmed_movement['curve_direction']}Undo")
+    send_to_pico(f"setpoint {programmed_movement['second_curve_setpoint']}")
+
+    time.sleep(programmed_movement['first_curve_delay'])
+
+    send_to_pico(f"setpoint {programmed_movement['first_curve_setpoint']}")
+    send_to_pico(f"servo {programmed_movement['curve_direction']}")
+
+
+
+
+    
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-picoIsConnected = True #Hoi emily pls vervang deze bool <o/
+picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
@@ -818,12 +856,21 @@ def build_real_navigation_section(parent):
         width=10,
         command=lambda r=True, d="Left", t=movement_time_rotation: nav_movement_time(r, d, t),
     ).grid(row = 0, column = 1, padx = 3, pady = 3) 
+
     tk.Button(
         parent,
         text = "rotate right",
         width=10,
         command=lambda r=True, d="Right", t=movement_time_rotation: nav_movement_time(r, d, t),
     ).grid(row = 1, column = 1, padx = 3, pady = 3) 
+
+    tk.Button(
+        parent,
+        text = "pROGRAMMED MOVEment",
+        width=20,
+        command=lambda: programmed_movement(),
+    ).grid(row = 2, column = 1, padx = 3, pady = 3) 
+
 
 def build_specific_servo_settings_section(parent):
     """Create preset buttons for specific tentacle movements.
