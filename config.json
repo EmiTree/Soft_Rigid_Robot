@@ -4,7 +4,7 @@
     "ki" : 2.0,
     "kd" : 0.2,
     "isOn" : false,
-    "setpoint" : -9.2,
+    "setpoint" : -5.5,
     "maxPWM" : 80.0,
     "motorStartPWM" : 15.0,
     "pidOutputLimit" : 60,

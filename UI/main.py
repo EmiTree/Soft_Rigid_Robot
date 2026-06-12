@@ -19,42 +19,73 @@ FILENAME = "csv_CurvingLeft09.csv"
 #FILENAME = "csv_DisturbanceCurveForward09.csv"
 #FILENAME = "csv_Nav09.csv"
 
-
-programmed_movement = {
+programmed_movement_config = {
     "curve_direction": "CurveForwards",
-    "first_curve_setpoint": -5,
-    "first_curve_delay": 5,
-    "second_curve_setpoint": 5,
-    "second_curve_delay": 5,
-    "third_curve_setpoint": 5,
-    "third_curve_delay": 5
+    "1_curve_setpoint": -5.1,
+    "first_curve_delay": 0,
+    "2_curve_setpoint": -14.2,
+    "second_curve_delay": 0,
+    "3_curve_setpoint": -11.2,
+    "third_curve_delay": 1
 }
 
 def programmed_movement():
-    #movement_start_time = time.time()
-    send_to_pico(f"setpoint {programmed_movement['first_curve_setpoint']}")
-    send_to_pico(f"servo {programmed_movement['curve_direction']}")
+    send_to_pico(f"servo CurveForwards")
+    
+    time.sleep(0.5)
+    
+    send_to_pico(f"setpoint -7")
+    
+    time.sleep(0.5)
+    
+    send_to_pico(f"setpoint -8")
 
-    time.sleep(programmed_movement['first_curve_delay'])
+    time.sleep(0.5)
+    send_to_pico(f"setpoint -8.5")
+    
+    time.sleep(0.5)
+    send_to_pico(f"setpoint -9.0")
+    
+    time.sleep(0.5)
+    send_to_pico(f"setpoint -9.5")
+    
+    time.sleep(0.5)
+    send_to_pico(f"setpoint -10.5")
+    
+    time.sleep(1)
+    send_to_pico(f"setpoint -10.5")
+    
+    time.sleep(1)
+    send_to_pico(f"setpoint -11.2")
+    
+    time.sleep(0.1)
+                 
+    
+    
+    
+    time.sleep(0.1)
+    
+    send_to_pico(f"setpoint {programmed_movement_config['3_curve_setpoint']}")
+    
+    
+    
+    
+    # send_to_pico(f"servo {programmed_movement_config['curve_direction']}")
 
-    send_to_pico(f"setpoint {programmed_movement['second_curve_setpoint']}")
-    send_to_pico(f"servo {programmed_movement['curve_direction']}")
+    # time.sleep(programmed_movement_config['second_curve_delay'])
 
-    time.sleep(programmed_movement['second_curve_delay'])
+    # send_to_pico(f"setpoint {programmed_movement_config['third_curve_setpoint']}")
+    # send_to_pico(f"servo {programmed_movement_config['curve_direction']}Undo")
 
-    send_to_pico(f"setpoint {programmed_movement['third_curve_setpoint']}")
-    send_to_pico(f"servo {programmed_movement['curve_direction']}Undo")
+    # time.sleep(programmed_movement_config['third_curve_delay'])
 
-    time.sleep(programmed_movement['third_curve_delay'])
+    # send_to_pico(f"servo {programmed_movement_config['curve_direction']}Undo")
+    # send_to_pico(f"setpoint {programmed_movement_config['second_curve_setpoint']}")
 
-    send_to_pico(f"servo {programmed_movement['curve_direction']}Undo")
-    send_to_pico(f"setpoint {programmed_movement['second_curve_setpoint']}")
+    # time.sleep(programmed_movement_config['first_curve_delay'])
 
-    time.sleep(programmed_movement['first_curve_delay'])
-
-    send_to_pico(f"setpoint {programmed_movement['first_curve_setpoint']}")
-    send_to_pico(f"servo {programmed_movement['curve_direction']}")
-
+    # send_to_pico(f"setpoint {programmed_movement_config['first_curve_setpoint']}")
+    # send_to_pico(f"servo {programmed_movement_config['curve_direction']}")
 
 
 
@@ -62,14 +93,14 @@ def programmed_movement():
 with open("config.json", "r") as jsonfile:
     configValues = json.load(jsonfile)
 
-picoIsConnected = False #Hoi emily pls vervang deze bool <o/
+picoIsConnected = True #Hoi emily pls vervang deze bool <o/
 # Set correct com port for pico
 #serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
 #serial = serial.Serial(port='COM14', baudrate = 115200, timeout=.1)
 #picoIsConnected = False #Hoi emily pls vervang deze bool <o/
 
 if picoIsConnected: serial = serial.Serial(port='COM10', baudrate = 115200, timeout=.1)
-if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
+#if picoIsConnected: serial = serial.Serial(port='COM3', baudrate = 115200, timeout=.1)
 
 recording = False
 
@@ -223,6 +254,9 @@ BALANCING_COMMANDS = [
     {"button_text": "Balancing Achieved", "command": "setpoint balancing"},
     {"button_text": "Stand Still", "command": "setpoint balancing"}
 ]
+
+
+
 def boot():
     print("         Starting...         ")
     send_to_pico(f"kp {pid_values['Kp']}")
@@ -1046,7 +1080,7 @@ def record_data():
     while True:
         data = serial.readline().decode('utf-8').strip()
         #print("data: ", data)
-        print(f"len(csv_data) {len(csv_data)}  Recording {recording} time {round(time.time() - start_time, 2)}")
+        #print(f"len(csv_data) {len(csv_data)}  Recording {recording} time {round(time.time() - start_time, 2)}")
 
         if data.startswith("A"):
             angle = data[2:]
