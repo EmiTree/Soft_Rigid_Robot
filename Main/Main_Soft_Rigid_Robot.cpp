@@ -55,8 +55,8 @@ float lastDt = 0.0f;
 
 // For using the robot with a controller
 bool drivenByController = false;
-float controllerInput = 0.0f;
-
+float controllerInputLeft = 0.0f;
+float controllerInputRight = 0.0f;
 
 /*
 These functions exist somewhere later in this file. Here are their names, what they return, and what inputs they need.
@@ -152,11 +152,18 @@ int main() {
 
                 if (drivenByController) { // Send pwm signals to motors instead of using pid
                     // Use controller inputs
-                    MotorCommand motorCommand = motorConverter.convert(controllerInput);
+                    MotorCommand motorCommand = motorConverter.convert(controllerInputLeft);
                     motorOutput = motorCommand.motorOutput;
                     float leftMotorOutput = motorCommand.leftMotorOutput;
+                    //float rightMotorOutput = motorCommand.rightMotorOutput;
+                    //navigation.applyRotation(leftMotorOutput, rightMotorOutput);
+                    //motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
+
+                    MotorCommand motorCommand = motorConverter.convert(controllerInputRight);
+                    motorOutput = motorCommand.motorOutput;
+                    //float leftMotorOutput = motorCommand.leftMotorOutput;
                     float rightMotorOutput = motorCommand.rightMotorOutput;
-                    navigation.applyRotation(leftMotorOutput, rightMotorOutput);
+                    //navigation.applyRotation(leftMotorOutput, rightMotorOutput);
                     motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
                 }
 
@@ -395,9 +402,12 @@ void processCommand() {
 
                 resetPid();
                 printf("\nrightMotorStartPwm set to %.2f\n", motorConverter.getRightMotorStartPwm());
-            } else if (strcmp(subCommand, "driveWheels") == 0) {
-                controllerInput = value;
-                printf("USED DRIVEWHEELS COMMAND set controllerInput to %.4f\n", controllerInput);
+            } else if (strcmp(subCommand, "driveLeft") == 0) {
+                controllerInputLeft = value;
+                printf("controllerInputLeft to %.4f\n", controllerInputLeft);
+            } else if (strcmp(subCommand, "driveRight") == 0) {
+                controllerInputRight = value;
+                printf("controllerInputRight to %.4f\n", controllerInputRight);
             } else if (strcmp(subCommand, "controllerOn") == 0) {
                 drivenByController = true;
                 printf("CONTROLLER INPUTS ARE ON");
