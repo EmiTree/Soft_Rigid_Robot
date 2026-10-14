@@ -53,6 +53,11 @@ float lastPwmA = 0.0f;
 float lastPwmB = 0.0f;
 float lastDt = 0.0f;
 
+// For using the robot with a controller
+bool drivenByController = false;
+float controllerInput = 0.0f;
+
+
 /*
 These functions exist somewhere later in this file. Here are their names, what they return, and what inputs they need.
 */
@@ -144,6 +149,17 @@ int main() {
                 navigation.applyRotation(leftMotorOutput, rightMotorOutput);
 
                 motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
+
+                if (drivenByController) { // Send pwm signals to motors instead of using pid
+                    // Use controller inputs
+                    MotorCommand motorCommand = motorConverter.convert(controllerInput);
+                    motorOutput = motorCommand.motorOutput;
+                    float leftMotorOutput = motorCommand.leftMotorOutput;
+                    float rightMotorOutput = motorCommand.rightMotorOutput;
+                    navigation.applyRotation(leftMotorOutput, rightMotorOutput);
+                    motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
+                }
+
             } else {
                 motorDriver.stop();
                 pid.reset();
@@ -379,6 +395,15 @@ void processCommand() {
 
                 resetPid();
                 printf("\nrightMotorStartPwm set to %.2f\n", motorConverter.getRightMotorStartPwm());
+            } else if (strcmp(subCommand, "driveWheels") == 0) {
+                controllerInput = value;
+                printf("USED DRIVEWHEELS COMMAND set controllerInput to %.4f\n", controllerInput);
+            } else if (strcmp(subCommand, "controllerOn") == 0) {
+                drivenByController = true;
+                printf("CONTROLLER INPUTS ARE ON");
+            } else if (strcmp(subCommand, "controllerOff") == 0) {
+                drivenByController = false;
+                printf("CONTROLLER INPUTS ARE OFF");
             } else if (strcmp(subCommand, "deadband") == 0) {
                 if (parts == 3) {
                     float oldValue = motorConverter.getDeadband();
