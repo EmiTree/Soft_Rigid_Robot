@@ -151,20 +151,30 @@ int main() {
                 motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
 
                 if (drivenByController) { // Send pwm signals to motors instead of using pid
+
+                    MotorCommand leftMotorCommand = motorConverter.convert(controllerInputLeft);
+                    float leftMotorOutput = leftMotorCommand.leftMotorOutput;
+
+                    // Convert right controller input
+                    MotorCommand rightMotorCommand = motorConverter.convert(controllerInputRight);
+                    float rightMotorOutput = rightMotorCommand.rightMotorOutput;
+
+                    // Drive both wheels
+                    motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
                     // Use controller inputs
-                    MotorCommand motorCommand = motorConverter.convert(controllerInputLeft);
-                    motorOutput = motorCommand.motorOutput;
-                    float leftMotorOutput = motorCommand.leftMotorOutput;
+                    //MotorCommand leftMotorCommand = motorConverter.convert(controllerInputLeft);
+                    //MotorOutput = leftMotorCommand.motorOutput;
+                    //float leftMotorOutput = leftMotorCommand.leftMotorOutput;
                     //float rightMotorOutput = motorCommand.rightMotorOutput;
                     //navigation.applyRotation(leftMotorOutput, rightMotorOutput);
                     //motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
 
-                    MotorCommand motorCommand = motorConverter.convert(controllerInputRight);
-                    motorOutput = motorCommand.motorOutput;
+                    //MotorCommand rightMotorCommand = motorConverter.convert(controllerInputRight);
+                    //rightMotorOutput = rightMotorCommand.motorOutput;
                     //float leftMotorOutput = motorCommand.leftMotorOutput;
-                    float rightMotorOutput = motorCommand.rightMotorOutput;
+                    //float rightMotorOutput = rightMotorCommand.rightMotorOutput;
                     //navigation.applyRotation(leftMotorOutput, rightMotorOutput);
-                    motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
+                    //motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
                 }
 
             } else {
