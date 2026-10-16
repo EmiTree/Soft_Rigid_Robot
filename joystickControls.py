@@ -69,9 +69,9 @@ def drivingWithStick(xInput, yInput, turning):
     if not turning:
         speedLeft = int(yInput * scalingFactor)
         speedRight = int(yInput * scalingFactor)
-    if turning: # Ik weet nog niet welke het min teken moet krijgen dit moet later aangepast worden
-        speedLeft = int(xInput * scalingFactor)
-        speedRight = -1 * int(xInput * scalingFactor)
+    if turning:
+        speedLeft = -1 * int(xInput * scalingFactor)
+        speedRight = int(xInput * scalingFactor)
 
     return speedLeft, speedRight
 
