@@ -35,24 +35,54 @@ class TextPrint:
 running = True
 
 #Robot state variables to display in the ui
-robotConnected = False
+robotConnected = True
 robotIsRunning = False
 manualControls = False
+motorInputLeft = 0
+motorInputRight = 0
+
 
 #Start serial monitor thread
-line = " \n"    #Line is the message that is sent to the robot
+line = None    #Line is the message that is sent to the robot
 data = None     #Data is what is read from the serial
 if robotConnected: serial = serial.Serial(port='COM5', baudrate = 115200, timeout=.1)
 
-def serial_thread(line):
-    global data
-    while running:
-        serial.write(line.encode())
-
+def serial_thread():
+    global data, line
+    while True:
+        if line:
+            serial.write(line.encode())
         data = serial.readline().decode('utf-8').strip()
-
-serial_thread = threading.Thread(target = serial_thread, daemon = True, args = line,)
+        print(data)
+serial_thread = threading.Thread(target = serial_thread, daemon = True)
 if robotConnected: serial_thread.start()
+
+
+def drivingWithStick(xInput, yInput, turning):
+    # Get raw joystick inputs
+    # yInput is value between -1 and 1 that will map to 20 and -20?
+    # Signal is the same for left and right
+    # turning is going to be done by having the opposite value to the left and right motors
+
+    scalingFactor = 80
+
+    if not turning:
+        speedLeft = int(yInput * scalingFactor)
+        speedRight = int(yInput * scalingFactor)
+    if turning: # Ik weet nog niet welke het min teken moet krijgen dit moet later aangepast worden
+        speedLeft = int(xInput * scalingFactor)
+        speedRight = -1 * int(xInput * scalingFactor)
+
+    return speedLeft, speedRight
+
+def drivingForwardsBackwards(yInput):
+    # yInput is value between -1 and 1 that will map to 20 and -20?
+    # Signal is the same for left and right
+    scalingFactor = 20
+    speedLeft = int(yInput * scalingFactor)
+    speedRight = int(yInput * scalingFactor)  
+
+    return speedLeft, speedRight
 
 def main():
     global running, line, robotIsRunning, robotConnected, manualControls
@@ -85,11 +115,11 @@ def main():
                     joystick = joysticks[event.instance_id]
                     if joystick.rumble(0, 0.7, 500):
                         print(f"Rumble effect played on joystick {event.instance_id}")
-                    line = "Start \n" # The A button starts the robot
+                    line = "start \n" # The A button starts the robot
                     robotIsRunning = True
 
                 if event.button == 1:
-                    line = "Stop \n" #The B button stops the robot
+                    line = "stop \n" #The B button stops the robot
                     robotIsRunning = False
 
                 if event.button == 2:
@@ -99,10 +129,13 @@ def main():
                 if event.button == 3:
                     line = "motor controllerOff\n" # Y Button
                     manualControls = False
-      
+
+            if event.type == pygame.JOYAXISMOTION: # When the joystick is moved update the speed of the motors
+                line = f"motor driveLeft {motorInputLeft}\n motor driveRight {motorInputRight}\n"
+
             if event.type == pygame.JOYBUTTONUP:
                 print("Joystick button released.")
-                line = " \n"
+                line = None
 
             # Handle hotplugging
             if event.type == pygame.JOYDEVICEADDED:
@@ -178,15 +211,23 @@ def main():
 
             text_print.unindent()
 
+        if abs(joystick.get_axis(0)) <= 0.5: # The robot will only turn if you tilt the joystick far to the left or right
+            robotIsTurning = False
+        else:
+            robotIsTurning = True
+
+        #print(f"joystick {round(joystick.get_axis(0), 2)}, {round(joystick.get_axis(1), 2)}, A: {joystick.get_button(0)}")
+        motorInputLeft, motorInputRight = drivingWithStick(joystick.get_axis(0), joystick.get_axis(1), robotIsTurning)
+
         text_print.tprint(screen, "                 ") # empty row
+        text_print.tprint(screen, f"motorInputLeft:{motorInputLeft} motorInputRight:{motorInputRight}")
         text_print.tprint(screen, f"robotIsRunning {robotIsRunning}")
         text_print.tprint(screen, f"manualControls {manualControls}")
-
+        text_print.tprint(screen, f"line: {line}")
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
         
-        print(f"joystick {round(joystick.get_axis(0), 2)}, {round(joystick.get_axis(1), 2)}, A: {joystick.get_button(0)}")
-        
+
         # Limit to 60 frames per second.
         clock.tick(60)
 
@@ -194,7 +235,7 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+    robotIsRunning = False
     # If you forget this line, the program will 'hang'
     # on exit if running from IDLE.
     pygame.quit()
