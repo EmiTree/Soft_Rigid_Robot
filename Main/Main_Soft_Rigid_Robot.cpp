@@ -134,7 +134,7 @@ int main() {
             float angle = mpu.getAngle();
             float gx = mpu.getGyroX();
             if (pidRunning) {
-                printf("A:%.2f\n", angle);
+                //printf("A:%.2f\n", angle);
                 float activeSetpoint = navigation.getActiveSetpoint(setpoint);
                 pidOutput = pid.update(activeSetpoint, angle, gx, dt, pValue, iValue, dValue);
 
@@ -154,10 +154,11 @@ int main() {
 
                     MotorCommand leftMotorCommand = motorConverter.convert(controllerInputLeft);
                     float leftMotorOutput = leftMotorCommand.leftMotorOutput;
-
                     // Convert right controller input
                     MotorCommand rightMotorCommand = motorConverter.convert(controllerInputRight);
                     float rightMotorOutput = rightMotorCommand.rightMotorOutput;
+
+                    printf("Motor Left:%.2f Motor Right: %.2f \n", leftMotorOutput, rightMotorOutput);
 
                     // Drive both wheels
                     motorDriver.driveWheels(leftMotorOutput, rightMotorOutput);
